@@ -2,6 +2,8 @@
 #include <stdio.h>
 #define BIT(x)  (1 << x)
 
+bool DES_DEBUG = false;
+
 static const unsigned int ip_matrix[64]={
     58,50,42,34,26,18,10,2,60,52,44,36,28,20,12,4,
     62,54,46,38,30,22,14,6,64,56,48,40,32,24,16,8,
@@ -113,6 +115,28 @@ static const unsigned int fp_matrix[64] ={
     34, 2, 42, 10, 50, 18, 58, 26, 33, 1, 41, 9, 49, 17, 57, 25
 };
 
+void print_arr(unsigned char* rk, unsigned int len){
+    for(int i =len-1; i>=0; i--){
+        printf("%x ", rk[i]);
+    }
+    puts("");
+}
+
+void printBits(size_t const size, void const * const ptr){
+    unsigned char *b = (unsigned char*) ptr;
+    unsigned char byte;
+    int i, j;
+    
+    for (i = size-1; i >= 0; i--) {
+        for (j = 7; j >= 0; j--) {
+            byte = (b[i] >> j) & 1;
+            printf("%u", byte);
+        }
+        printf(" ");
+    }
+    puts("");
+}
+
 int ip(unsigned char* pt){
     unsigned char tmp[8];
     for (int i=0; i<8; i++){
@@ -223,8 +247,10 @@ int sbox_m(unsigned char* m){
         unsigned char input = bit1|(bit2<<1)|(bit3<<2)|(bit4<<3)|(bit5<<4)|(bit6<<5);
         sbox_tmp[i] = sbox(8-i, input);
     }
-    printf("sbox tmp :\n");
-    printBits(8, sbox_tmp);
+    if(DES_DEBUG){
+        printf("sbox tmp :\n");
+        printBits(8, sbox_tmp);
+    }
     for(int ind=31; ind>=0; ind--){
         unsigned char bit = (sbox_tmp[ind/4] >> (ind%4)) & 1U;
         m[ind/8] = (m[ind/8] & ~(1U << (ind%8))) | (bit << (ind%8));
@@ -245,48 +271,36 @@ int pbox(unsigned char* m){
     return 0;
 }
 
-void print_arr(unsigned char* rk, unsigned int len){
-    for(int i =len-1; i>=0; i--){
-        printf("%x ", rk[i]);
-    }
-    puts("");
-}
-
-void printBits(size_t const size, void const * const ptr)
-{
-    unsigned char *b = (unsigned char*) ptr;
-    unsigned char byte;
-    int i, j;
-    
-    for (i = size-1; i >= 0; i--) {
-        for (j = 7; j >= 0; j--) {
-            byte = (b[i] >> j) & 1;
-            printf("%u", byte);
-        }
-        printf(" ");
-    }
-    puts("");
-}
-
-
-int des_encrypt(unsigned char* cipher, const unsigned char* key, const unsigned char* pt){
+int des_core(unsigned char* cipher, const unsigned char* key, const unsigned char* pt, unsigned int mode){
     //init
-    unsigned char ptc[8]={0,0,0,0,0,0,0,0};
-    unsigned char keyc[7]={0,0,0,0,0,0,0};
+    unsigned char ptc[8]={0};
+    unsigned char keyc[7]={0};
     for(int i=0; i<8; i++){
         ptc[i] = pt[i];
     }
+    if(DES_DEBUG){
+        puts("Before key permutation");
+        printBits(8, key);
+    }
     key_permutation(keyc, key);
-    unsigned char left[4]={0,0,0,0};
-    unsigned char right[4]={0,0,0,0};
-    unsigned char round_key[6]={0,0,0,0,0,0};
-    unsigned char exp_m[6]={0,0,0,0,0,0};
+    if(DES_DEBUG){
+        puts("After key permutation");
+        printBits(7, keyc);
+    }
+    unsigned char left[4]={0};
+    unsigned char right[4]={0};
+    unsigned char round_key[16][6]={0};
+    unsigned char exp_m[6]={0};
     //initial permutation
-    puts("Before m permutation");
-    printBits(8, ptc);
+    if(DES_DEBUG){
+        puts("Before m permutation");
+        printBits(8, ptc);
+    }
     ip(ptc);
-    puts("After m permutation");
-    printBits(8, ptc);
+    if(DES_DEBUG){
+        puts("After m permutation");
+        printBits(8, ptc);
+    }
     //split left and right
     for(int i=0; i<4; i++){
         left[i]=ptc[i+4];
@@ -294,38 +308,57 @@ int des_encrypt(unsigned char* cipher, const unsigned char* key, const unsigned 
     for(int i=0; i<4; i++){
         right[i] = ptc[i];
     }
-    //DES inner round
+    //Init round key
     for(int round=0; round<16; round++){
-        //printf("Rotate Key %d:\n",round);
         if(key_rotate_seq[round]==1){
             key_rotate_1(keyc);
         }else if (key_rotate_seq[round]==2){  
             key_rotate_2(keyc);
         }
-        //printBits(7, keyc);
-        key_compress(round_key, keyc);
-        printf("Round Key %d:\n",round);
-        //printBits(6, round_key);
-        print_arr(round_key,6);
+        if(DES_DEBUG){
+            printf("Rotate Key %d:\n",round);
+            printBits(7, keyc);
+        }
+        key_compress(round_key[round], keyc);
+        if(DES_DEBUG){
+            printf("Round Key %d:\n",round);
+            printBits(6, round_key[round]);
+            print_arr(round_key[round],6);
+        }
+    }
+    //DES inner round
+    for(int round=0; round<16; round++){
         expansion(exp_m, right);
-        printf("left %d:\n",round);
-        printBits(4, left);
-        printf("right %d:\n",round);
-        printBits(4, right);
-        printf("Expansion %d:\n",round);
-        printBits(6, exp_m);
+        if(DES_DEBUG){
+            printf("left %d:\n",round);
+            printBits(4, left);
+            printf("right %d:\n",round);
+            printBits(4, right);
+            printf("Expansion %d:\n",round);
+            printBits(6, exp_m);
+        }
         //R XOR round_key 
         for(int i=0; i<6; i++){
-            exp_m[i] ^= round_key[i];
+            if(mode==0){
+                exp_m[i] ^= round_key[round][i];
+            }else{
+                exp_m[i] ^= round_key[15-round][i];
+            }
         }
-        printf("XOR Expansion %d:\n",round);
-        printBits(6, exp_m);
+        if(DES_DEBUG){
+            printf("XOR Expansion %d:\n",round);
+            printBits(6, exp_m);
+        }
         sbox_m(exp_m);
-        printf("After sbox %d:\n",round);
-        printBits(4, exp_m);
+        if(DES_DEBUG){
+            printf("After sbox %d:\n",round);
+            printBits(4, exp_m);
+        }
         pbox(exp_m);
-        printf("After pbox %d:\n",round);
-        printBits(4, exp_m);
+        if(DES_DEBUG){
+            printf("After pbox %d:\n",round);
+            printBits(4, exp_m);
+        }
 
         unsigned char tmp[4];
         for(int i=0; i<4; i++){
@@ -338,11 +371,12 @@ int des_encrypt(unsigned char* cipher, const unsigned char* key, const unsigned 
             right[i]=tmp[i] ^ exp_m[i];
         }
     }
-    
-    printf("left %d:\n",16);
-    printBits(4, left);
-    printf("right %d:\n",16);
-    printBits(4, right);
+    if(DES_DEBUG){
+        printf("left %d:\n",16);
+        printBits(4, left);
+        printf("right %d:\n",16);
+        printBits(4, right);
+    }
     //final permutation
     cipher[0] = left[0];
     cipher[1] = left[1];
@@ -352,8 +386,24 @@ int des_encrypt(unsigned char* cipher, const unsigned char* key, const unsigned 
     cipher[5] = right[1];
     cipher[6] = right[2];
     cipher[7] = right[3];
-    printf("before permute Cipher :\n");
-    printBits(8, cipher);
+    if(DES_DEBUG){
+        printf("before permute Cipher :\n");
+        printBits(8, cipher);
+    }
     fp(cipher);
+    if(DES_DEBUG){
+        printf("after permute Cipher :\n");
+        printBits(8, cipher);
+    }
+    return 0;
+}
+
+int des_encrypt(unsigned char* cipher, const unsigned char* key, const unsigned char* plaintext){
+    des_core(cipher, key, plaintext, 0);
+    return 0;
+}
+
+int des_decrypt(unsigned char* plaintext, const unsigned char* key, const unsigned char* cipher){
+    des_core(plaintext, key, cipher, 1);
     return 0;
 }
