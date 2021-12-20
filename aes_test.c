@@ -1,0 +1,32 @@
+#include "aes.h"
+#include <stdio.h>
+#include <stdint.h>
+extern bool AES_DEBUG;
+
+void testkeyschedule(){
+    uint8_t key[16]={0x54, 0x68, 0x61, 0x74, 
+                    0x73, 0x20, 0x6D, 0x79, 
+                    0x20, 0x4B, 0x75, 0x6E, 
+                    0x67, 0x20, 0x46, 0x75};
+    uint8_t roundKey[11][16] = {0};
+    init_key_schedule(roundKey[0], key);
+    for(int i=0;i<11;i++){
+        print_arr(roundKey[i], 16);
+    }
+}
+
+void testaesencrypt(){
+    AES_DEBUG = false;
+    uint8_t key[16]={0x54, 0x68, 0x61, 0x74,    
+                    0x73, 0x20, 0x6D, 0x79, 
+                    0x20, 0x4B, 0x75, 0x6E, 
+                    0x67, 0x20, 0x46, 0x75};
+    uint8_t m[16] = {0x54, 0x77, 0x6F, 0x20, 0x4F, 0x6E, 0x65 ,0x20, 0x4E, 0x69 ,0x6E, 0x65, 0x20, 0x54, 0x77, 0x6F};
+    uint8_t cipher[16] = {0};
+    aes_encrypt(cipher, key, m);
+    print_arr(cipher, 16);
+}
+
+int main(void){
+    testaesencrypt();
+}
