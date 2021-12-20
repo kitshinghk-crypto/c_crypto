@@ -1,6 +1,5 @@
 #ifndef DES_H
 #define DES_H
-#include <stddef.h>
 typedef int bool;
 #define true 1
 #define false 0
