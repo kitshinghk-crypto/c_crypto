@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#define D if(SHA256_DEBUG)
 
 
 bool SHA256_DEBUG = false;
@@ -112,34 +113,34 @@ int init_w(uint32_t* w, uint8_t* m){
 int sha256_hash(uint32_t* out, uint8_t* m){
     uint32_t a=ih[0], b=ih[1], c=ih[2], d=ih[3], e=ih[4], f=ih[5], g=ih[6], h=ih[7];
     size_t len = strlen((char*)m);
-    printf(" Message : %s\n", (char*)m);
-    printf(" Message length: %zu\n", len);
+    D{printf(" Message : %s\n", (char*)m);}
+    D{printf(" Message length: %zu\n", len);}
 
     size_t m_bit_len = len * sizeof(uint8_t) * 8;
-    printf(" Message bit length: %zu\n", m_bit_len);
+    D{printf(" Message bit length: %zu\n", m_bit_len);}
     size_t byte_pad_len = ((448 + 512)-(m_bit_len+1)%512)%512;
-    printf(" Message pad bit length: %zu\n", byte_pad_len+1);
+    D{printf(" Message pad bit length: %zu\n", byte_pad_len+1);}
     size_t padded_m_len = len + (byte_pad_len+1)/8+8;
-    printf(" Padded message len: %zu\n", padded_m_len);
+    D{printf(" Padded message len: %zu\n", padded_m_len);}
     uint8_t * padded_m = malloc(sizeof(uint8_t)* padded_m_len);
     for(uint8_t i =0; i< len; ++i){
         *(padded_m+i) = m[i];
     }
     pad(padded_m, padded_m_len, len);
-    printf(" Padded message: \n");
-    print_arr(padded_m, padded_m_len);
+    D{printf(" Padded message: \n");}
+    D{print_arr(padded_m, padded_m_len);}
     pad_m_len(padded_m, padded_m_len, m_bit_len);
-    printf(" Padded message with message size: \n");
-    print_arr(padded_m, padded_m_len);
+    D{printf(" Padded message with message size: \n");}
+    D{print_arr(padded_m, padded_m_len);}
 
     uint32_t hash[8] = {0};
     init_h(hash);
     for (uint32_t round =0; round<padded_m_len/64; ++round){
-        printf("Round=%u\n", round);
+        D{printf("Round=%u\n", round);}
         uint32_t w[64] = {0};
         init_w(w, padded_m+(round*64));
-        printf(" init w: \n");    
-        print_arr32(w, 64);
+        D{printf(" init w: \n");} 
+        D{print_arr32(w, 64);}
         a=hash[0];b=hash[1];c=hash[2];d=hash[3];e=hash[4];f=hash[5];g=hash[6];h=hash[7];
         uint32_t t1=0, t2=0;
         for(uint8_t i=0; i<64; ++i){
@@ -147,24 +148,24 @@ int sha256_hash(uint32_t* out, uint8_t* m){
             t2 = func_e0(a) + func_maj(a,b,c);
             h=g; g=f; f=e; e=d+t1; d=c; c=b; b=a; a=t1+t2;
         }
-        printf(" a: \n");print_arr32(&a, 1);
-        printf(" b: \n");print_arr32(&b, 1);
-        printf(" c: \n");print_arr32(&c, 1);
-        printf(" d: \n");print_arr32(&d, 1);
-        printf(" e: \n");print_arr32(&e, 1);
-        printf(" f: \n");print_arr32(&f, 1);
-        printf(" g: \n");print_arr32(&g, 1);
-        printf(" h: \n");print_arr32(&h, 1);
+        D{printf(" a: \n");print_arr32(&a, 1);}
+        D{printf(" b: \n");print_arr32(&b, 1);}
+        D{printf(" c: \n");print_arr32(&c, 1);}
+        D{printf(" d: \n");print_arr32(&d, 1);}
+        D{printf(" e: \n");print_arr32(&e, 1);}
+        D{printf(" f: \n");print_arr32(&f, 1);}
+        D{printf(" g: \n");print_arr32(&g, 1);}
+        D{printf(" h: \n");print_arr32(&h, 1);}
 
         hash[0] +=a; hash[1] +=b; hash[2] +=c; hash[3] +=d; hash[4] +=e; hash[5] +=f; hash[6] +=g; hash[7] +=h;
-        printf(" hash0: \n");print_arr32(hash, 1);
-        printf(" hash1: \n");print_arr32(hash+1, 1);
-        printf(" hash2: \n");print_arr32(hash+2, 1);
-        printf(" hash3: \n");print_arr32(hash+3, 1);
-        printf(" hash4: \n");print_arr32(hash+4, 1);
-        printf(" hash5: \n");print_arr32(hash+5, 1);
-        printf(" hash6: \n");print_arr32(hash+6, 1);
-        printf(" hash7: \n");print_arr32(hash+7, 1);
+        D{printf(" hash0: \n");print_arr32(hash, 1);}
+        D{printf(" hash1: \n");print_arr32(hash+1, 1);}
+        D{printf(" hash2: \n");print_arr32(hash+2, 1);}
+        D{printf(" hash3: \n");print_arr32(hash+3, 1);}
+        D{printf(" hash4: \n");print_arr32(hash+4, 1);}
+        D{printf(" hash5: \n");print_arr32(hash+5, 1);}
+        D{printf(" hash6: \n");print_arr32(hash+6, 1);}
+        D{printf(" hash7: \n");print_arr32(hash+7, 1);}
     }
     for(uint8_t i=0;i<8;++i){
         out[i] = hash[i];

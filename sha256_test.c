@@ -11,7 +11,7 @@ void print_arr32(uint32_t* rk, unsigned int len){
 }
 
 void testsha256(){
-    SHA256_DEBUG = true;
+    SHA256_DEBUG = false;
     //68 65 6C 6C 6F 20 77 6F 72 6C 64
     uint8_t m[12]={0x68, 0x65, 0x6C, 0x6C ,0x6F ,0x20 ,0x77 ,0x6F, 0x72, 0x6C, 0x64, 0x00};
     uint32_t hash[8]={0};
