@@ -1,4 +1,5 @@
-TARGET = des_test
+sha256_test: sha256.o sha256_test.c
+	gcc -o $@ $^
 
 des_test: des.o des_test.c
 	gcc -o $@ $^
@@ -10,4 +11,7 @@ des.o: des.c
 	gcc -c $^
 
 aes.o: aes.c
+	gcc -c $^
+
+sha256.o: sha256.c
 	gcc -c $^
