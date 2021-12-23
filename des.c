@@ -1,6 +1,7 @@
 #include "des.h"
 #include <stdio.h>
 #define BIT(x)  (1 << x)
+#define D if(DES_DEBUG)
 
 bool DES_DEBUG = false;
 
@@ -19,23 +20,25 @@ static const unsigned int key_permutation_matrix[56]={
 };
 
 static const unsigned int key_rotate_1_matrix[56]={
-    28,1,2,3,4,5,6,7,
-    8,9,10,11,12,13,14,15,
-    16,17,18,19,20,21,22,23,
-    24,25,26,27,56,29,30,31,
-    32,33,34,35,36,37,38,39,
-    40,41,42,43,44,45,46,47,
-    48,49,50,51,52,53,54,55
+    2,3,4,5,6,7,8,9,
+    10,11,12,13,14,15,16,17,
+    18,19,20,21,22,23,24,25,
+    26,27,28,1,
+    30,31,32,33,
+    34,35,36,37,38,39,40,41,
+    42,43,44,45,46,47,48,49,
+    50,51,52,53,54,55,56,29
 };
 
 static const unsigned int key_rotate_2_matrix[56]={
-    27,28,1,2,3,4,5,6,
-    7,8,9,10,11,12,13,14,
-    15,16,17,18,19,20,21,22,
-    23,24,25,26,55,56,29,30,
-    31,32,33,34,35,36,37,38,
-    39,40,41,42,43,44,45,46,
-    47,48,49,50,51,52,53,54
+    3,4,5,6,7,8,9,
+    10,11,12,13,14,15,16,17,
+    18,19,20,21,22,23,24,25,
+    26,27,28,1,2,
+    31,32,33,
+    34,35,36,37,38,39,40,41,
+    42,43,44,45,46,47,48,49,
+    50,51,52,53,54,55,56,29,30
 };
 
 static const unsigned int key_compress_matrix[48]={
@@ -116,7 +119,7 @@ static const unsigned int fp_matrix[64] ={
 };
 
 void print_arr(unsigned char* rk, unsigned int len){
-    for(int i =len-1; i>=0; i--){
+    for(int i =0; i<len; ++i){
         printf("%x ", rk[i]);
     }
     puts("");
@@ -127,7 +130,7 @@ void printBits(size_t const size, void const * const ptr){
     unsigned char byte;
     int i, j;
     
-    for (i = size-1; i >= 0; i--) {
+    for (i = 0; i < size; ++i) {
         for (j = 7; j >= 0; j--) {
             byte = (b[i] >> j) & 1;
             printf("%u", byte);
@@ -143,9 +146,9 @@ int ip(unsigned char* pt){
         tmp[i] = pt[i];
     }
     for (int i=0; i<64; i++){
-        unsigned int ind = 64U - ip_matrix[i];
-        unsigned char bit = (tmp[ind/8] >> ind%8) & 1U;
-        pt[7-(i/8)] = (pt[7-(i/8)] & ~(1U << (7-(i%8)))) | (bit << (7-(i%8)));
+        unsigned int ind = ip_matrix[i]-1;
+        unsigned char bit = (tmp[ind/8] >> (8-ind%8-1)) & 1U;
+        pt[(i/8)] = (pt[(i/8)] & ~(1U << (7-(i%8)))) | (bit << (7-(i%8)));
     }
     return 0;
 }
@@ -156,8 +159,9 @@ int fp(unsigned char* pt){
         tmp[i] = pt[i];
     }
     for (int i=0; i<64; i++){
-        unsigned char bit = (tmp[(fp_matrix[i]-1)/8] >> (fp_matrix[i]-1)%8) & 1U;
-        pt[i/8] = (pt[i/8] & ~(1U << (i%8))) | (bit << (i%8));
+        unsigned int ind = fp_matrix[i]-1;
+        unsigned char bit = (tmp[ind/8] >> (8-ind%8-1)) & 1U;
+        pt[(i/8)] = (pt[(i/8)] & ~(1U << (7-(i%8)))) | (bit << (7-(i%8)));
     }
     return 0;
 }
@@ -165,9 +169,9 @@ int fp(unsigned char* pt){
 
 int key_permutation(unsigned char * pk, const unsigned char * k){
     for (int i=0; i<56; i++){
-        unsigned int ind = 64U - key_permutation_matrix[i];
-        unsigned char bit = (k[ind/8] >> ind%8) & 1U;
-        pk[6-(i/8)] = (pk[6-(i/8)] & ~(1U << (7-(i%8)))) | (bit << (7-(i%8)));
+        unsigned int ind = key_permutation_matrix[i]-1;
+        unsigned char bit = (k[ind/8] >> (8-ind%8-1)) & 1U;
+        pk[(i/8)] = (pk[(i/8)] & ~(1U << (7-(i%8)))) | (bit << (7-(i%8)));
     }
     return 0;
 }
@@ -178,8 +182,8 @@ int key_rotate_1(unsigned char * k){
         tmp[i] = k[i];
     }
     for (int i=0; i<56; i++){
-        unsigned char bit = (tmp[(key_rotate_1_matrix[i]-1)/8] >> (key_rotate_1_matrix[i]-1)%8) & 1U;
-        k[i/8] = (k[i/8] & ~(1U << (i%8))) | (bit << (i%8));
+        unsigned char bit = (tmp[(key_rotate_1_matrix[i]-1)/8] >> (7-(key_rotate_1_matrix[i]-1)%8)) & 1U;
+        k[i/8] = (k[i/8] & ~(1U << (7-(i%8)))) | (bit << (7-(i%8)));
     }
     return 0;
 }
@@ -190,26 +194,26 @@ int key_rotate_2(unsigned char * k){
         tmp[i] = k[i];
     }
     for (int i=0; i<56; i++){
-        unsigned char bit = (tmp[(key_rotate_2_matrix[i]-1)/8] >> (key_rotate_2_matrix[i]-1)%8) & 1U;
-        k[i/8] = (k[i/8] & ~(1U << (i%8))) | (bit << (i%8));
+        unsigned char bit = (tmp[(key_rotate_2_matrix[i]-1)/8] >> (7-(key_rotate_2_matrix[i]-1)%8)) & 1U;
+        k[i/8] = (k[i/8] & ~(1U << (7-(i%8)))) | (bit << (7-(i%8)));
     }
     return 0;
 }
 
 int key_compress(unsigned char * ck, unsigned char* k){
     for (int i=0; i<48; i++){
-        unsigned int ind = 56U - key_compress_matrix[i];
-        unsigned char bit = (k[ind/8] >> ind%8) & 1U;
-        ck[5-(i/8)] = (ck[5-(i/8)] & ~(1U << (7-(i%8)))) | (bit << (7-(i%8)));
+        unsigned int ind =  key_compress_matrix[i]-1;
+        unsigned char bit = (k[ind/8] >> (8-ind%8-1)) & 1U;
+        ck[(i/8)] = (ck[(i/8)] & ~(1U << (7-(i%8)))) | (bit << (7-(i%8)));
     }
     return 0;
 }
 
 int expansion(unsigned char * em, unsigned char* m){
     for (int i=0; i<48; i++){
-        unsigned int ind = 32U - exp_matrix[i];
-        unsigned char bit = (m[ind/8] >> ind%8) & 1U;
-        em[5-(i/8)] = (em[5-(i/8)] & ~(1U << (7-(i%8)))) | (bit << (7-(i%8)));
+        unsigned int ind = exp_matrix[i]-1;
+        unsigned char bit = (m[ind/8] >> (8-ind%8-1)) & 1U;
+        em[(i/8)] = (em[(i/8)] & ~(1U << (7-(i%8)))) | (bit << (7-(i%8)));
     }
     return 0;
 }
@@ -237,23 +241,20 @@ unsigned int sbox(unsigned int box_num, unsigned char input){
 
 int sbox_m(unsigned char* m){
     unsigned char sbox_tmp[8];
-    for(int i=7 ; i>=0; i--){
-        unsigned char bit1 = (m[(i*6+0)/8] >> (i*6+0)%8) & 1U;
-        unsigned char bit2 = (m[(i*6+1)/8] >> (i*6+1)%8) & 1U;
-        unsigned char bit3 = (m[(i*6+2)/8] >> (i*6+2)%8) & 1U;
-        unsigned char bit4 = (m[(i*6+3)/8] >> (i*6+3)%8) & 1U;
-        unsigned char bit5 = (m[(i*6+4)/8] >> (i*6+4)%8) & 1U;
-        unsigned char bit6 = (m[(i*6+5)/8] >> (i*6+5)%8) & 1U;
-        unsigned char input = bit1|(bit2<<1)|(bit3<<2)|(bit4<<3)|(bit5<<4)|(bit6<<5);
-        sbox_tmp[i] = sbox(8-i, input);
+    for(int i=0 ; i<8; ++i){
+        unsigned char bit1 = (m[(i*6+0)/8] >> (7-(i*6+0)%8)) & 1U;
+        unsigned char bit2 = (m[(i*6+1)/8] >> (7-(i*6+1)%8)) & 1U;
+        unsigned char bit3 = (m[(i*6+2)/8] >> (7-(i*6+2)%8)) & 1U;
+        unsigned char bit4 = (m[(i*6+3)/8] >> (7-(i*6+3)%8)) & 1U;
+        unsigned char bit5 = (m[(i*6+4)/8] >> (7-(i*6+4)%8)) & 1U;
+        unsigned char bit6 = (m[(i*6+5)/8] >> (7-(i*6+5)%8)) & 1U;
+        unsigned char input = bit6|(bit5<<1)|(bit4<<2)|(bit3<<3)|(bit2<<4)|(bit1<<5);
+        sbox_tmp[i] = sbox(i+1, input);
     }
-    if(DES_DEBUG){
-        printf("sbox tmp :\n");
-        printBits(8, sbox_tmp);
-    }
-    for(int ind=31; ind>=0; ind--){
-        unsigned char bit = (sbox_tmp[ind/4] >> (ind%4)) & 1U;
-        m[ind/8] = (m[ind/8] & ~(1U << (ind%8))) | (bit << (ind%8));
+    D{ printf("sbox tmp :\n"); printBits(8, sbox_tmp); }
+    for(int ind=0; ind<32; ++ind){
+        unsigned char bit = (sbox_tmp[ind/4] >> (3-(ind%4))) & 1U;
+        m[ind/8] = (m[ind/8] & ~(1U << (7-(ind%8)))) | (bit << (7-(ind%8)));
     }
     return 0;
 }
@@ -264,9 +265,9 @@ int pbox(unsigned char* m){
         tmp[i] = m[i];
     }
     for (int i=0; i<32; i++){
-        unsigned int ind = 32U - pbox_matrix[i];
-        unsigned char bit = (tmp[ind/8] >> ind%8) & 1U;
-        m[3-(i/8)] = (m[3-(i/8)] & ~(1U << (7-(i%8)))) | (bit << (7-(i%8)));
+        unsigned int ind =  pbox_matrix[i]-1;
+        unsigned char bit = (tmp[ind/8] >> (8-ind%8-1)) & 1U;
+        m[(i/8)] = (m[(i/8)] & ~(1U << (7-(i%8)))) | (bit << (7-(i%8)));
     }
     return 0;
 }
@@ -278,35 +279,23 @@ int des_core(unsigned char* cipher, const unsigned char* key, const unsigned cha
     for(int i=0; i<8; i++){
         ptc[i] = pt[i];
     }
-    if(DES_DEBUG){
-        puts("Before key permutation");
-        printBits(8, key);
-    }
+    D{ puts("Before key permutation"); printBits(8, key); }
     key_permutation(keyc, key);
-    if(DES_DEBUG){
-        puts("After key permutation");
-        printBits(7, keyc);
-    }
+    D{ puts("After key permutation"); printBits(7, keyc); }
     unsigned char left[4]={0};
     unsigned char right[4]={0};
     unsigned char round_key[16][6]={0};
     unsigned char exp_m[6]={0};
     //initial permutation
-    if(DES_DEBUG){
-        puts("Before m permutation");
-        printBits(8, ptc);
-    }
+    D{ puts("Before m permutation"); printBits(8, ptc); }
     ip(ptc);
-    if(DES_DEBUG){
-        puts("After m permutation");
-        printBits(8, ptc);
-    }
+    D{ puts("After m permutation"); printBits(8, ptc); }
     //split left and right
     for(int i=0; i<4; i++){
-        left[i]=ptc[i+4];
+        left[i]=ptc[i];
     }
     for(int i=0; i<4; i++){
-        right[i] = ptc[i];
+        right[i] = ptc[i+4];
     }
     //Init round key
     for(int round=0; round<16; round++){
@@ -315,28 +304,14 @@ int des_core(unsigned char* cipher, const unsigned char* key, const unsigned cha
         }else if (key_rotate_seq[round]==2){  
             key_rotate_2(keyc);
         }
-        if(DES_DEBUG){
-            printf("Rotate Key %d:\n",round);
-            printBits(7, keyc);
-        }
+        D{ printf("Rotate Key %d:\n",round); printBits(7, keyc); }
         key_compress(round_key[round], keyc);
-        if(DES_DEBUG){
-            printf("Round Key %d:\n",round);
-            printBits(6, round_key[round]);
-            print_arr(round_key[round],6);
-        }
+        D{ printf("Round Key %d:\n",round); printBits(6, round_key[round]); print_arr(round_key[round],6); }
     }
     //DES inner round
     for(int round=0; round<16; round++){
         expansion(exp_m, right);
-        if(DES_DEBUG){
-            printf("left %d:\n",round);
-            printBits(4, left);
-            printf("right %d:\n",round);
-            printBits(4, right);
-            printf("Expansion %d:\n",round);
-            printBits(6, exp_m);
-        }
+        D{ printf("left %d:\n",round); printBits(4, left); printf("right %d:\n",round); printBits(4, right); printf("Expansion %d:\n",round); printBits(6, exp_m); }
         //R XOR round_key 
         for(int i=0; i<6; i++){
             if(mode==0){
@@ -345,20 +320,11 @@ int des_core(unsigned char* cipher, const unsigned char* key, const unsigned cha
                 exp_m[i] ^= round_key[15-round][i];
             }
         }
-        if(DES_DEBUG){
-            printf("XOR Expansion %d:\n",round);
-            printBits(6, exp_m);
-        }
+        D{ printf("XOR Expansion %d:\n",round); printBits(6, exp_m); }
         sbox_m(exp_m);
-        if(DES_DEBUG){
-            printf("After sbox %d:\n",round);
-            printBits(4, exp_m);
-        }
+        D{ printf("After sbox %d:\n",round); printBits(4, exp_m); }
         pbox(exp_m);
-        if(DES_DEBUG){
-            printf("After pbox %d:\n",round);
-            printBits(4, exp_m);
-        }
+        D{ printf("After pbox %d:\n",round); printBits(4, exp_m); }
 
         unsigned char tmp[4];
         for(int i=0; i<4; i++){
@@ -371,30 +337,19 @@ int des_core(unsigned char* cipher, const unsigned char* key, const unsigned cha
             right[i]=tmp[i] ^ exp_m[i];
         }
     }
-    if(DES_DEBUG){
-        printf("left %d:\n",16);
-        printBits(4, left);
-        printf("right %d:\n",16);
-        printBits(4, right);
-    }
+    D{ printf("left %d:\n",16); printBits(4, left); printf("right %d:\n",16); printBits(4, right); }
     //final permutation
-    cipher[0] = left[0];
-    cipher[1] = left[1];
-    cipher[2] = left[2];
-    cipher[3] = left[3];
-    cipher[4] = right[0];
-    cipher[5] = right[1];
-    cipher[6] = right[2];
-    cipher[7] = right[3];
-    if(DES_DEBUG){
-        printf("before permute Cipher :\n");
-        printBits(8, cipher);
-    }
+    cipher[0] = right[0];
+    cipher[1] = right[1];
+    cipher[2] = right[2];
+    cipher[3] = right[3];
+    cipher[4] = left[0];
+    cipher[5] = left[1];
+    cipher[6] = left[2];
+    cipher[7] = left[3];
+    D{ printf("before permute Cipher :\n"); printBits(8, cipher); }
     fp(cipher);
-    if(DES_DEBUG){
-        printf("after permute Cipher :\n");
-        printBits(8, cipher);
-    }
+    D{ printf("after permute Cipher :\n"); printBits(8, cipher); }
     return 0;
 }
 

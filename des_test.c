@@ -104,24 +104,24 @@ void testsbox2(){
 void testdesecrypt(){
     puts("Test DES Encrypt: ");
     //01 23 45 67 89 AB CD EF
-    unsigned char pt[8]={0xef,0xcd,0xab,0x89,0x67,0x45,0x23,0x01};
-    unsigned char k[8]={0xf1,0xdf,0xbc,0x9b,0x79,0x57,0x34,0x13};
-    //unsigned char k[8]={0x12,0x34,0x56,0x78,0x9a,0xbc,0xde,0xF0};
+    //unsigned char pt[8]={0xef,0xcd,0xab,0x89,0x67,0x45,0x23,0x01};
+    unsigned char pt[8]={0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef};
+    unsigned char k[8]={0x13,0x34,0x57,0x79,0x9B,0xBC,0xDF,0xF1};
     DES_DEBUG = false;
     unsigned char cipher[8];
     puts("plaintext: ");
-    for(int i=7; i>=0; i--){
+    for(int i=0; i<8; ++i){
         printf("%x ", pt[i]);
     }
     puts("");
     puts("key: ");
-    for(int i=7; i>=0; i--){
+    for(int i=0; i<8; ++i){
         printf("%x ", k[i]);
     }
     puts("");
     des_encrypt(cipher, k, pt);
     puts("chipher: ");
-    for(int i=7; i>=0; i--){
+    for(int i=0; i<8; ++i){
         printf("%x ", cipher[i]);
     }
     puts("");
@@ -131,24 +131,24 @@ void testdesecrypt(){
 void testdesdecrypt(){
     puts("Test DES Decrypt: ");
     //85 E8 13 54 0F 0A B4 05
-    unsigned char pt[8]={0x05,0xb4,0x0a,0x0f,0x54,0x13,0xe8,0x85};
-    unsigned char k[8]={0xf1,0xdf,0xbc,0x9b,0x79,0x57,0x34,0x13};
+    unsigned char pt[8]={0x85,0xe8,0x13,0x54,0x0f,0x0a,0xb4,0x05};
+    unsigned char k[8]={0x13,0x34,0x57,0x79,0x9B,0xBC,0xDF,0xF1};
     //unsigned char k[8]={0x12,0x34,0x56,0x78,0x9a,0xbc,0xde,0xF0};
     DES_DEBUG = false;
     unsigned char cipher[8];
     puts("chipher: ");
-    for(int i=7; i>=0; i--){
+    for(int i=0; i<8; ++i){
         printf("%x ", pt[i]);
     }
     puts("");
     puts("key: ");
-    for(int i=7; i>=0; i--){
+    for(int i=0; i<8; ++i){
         printf("%x ", k[i]);
     }
     puts("");
     des_decrypt(cipher, k, pt);
     puts("plaintext: ");
-    for(int i=7; i>=0; i--){
+    for(int i=0; i<8; ++i){
         printf("%x ", cipher[i]);
     }
     puts("");

@@ -1,6 +1,7 @@
 #include "aes.h"
 #include <stdio.h>
 #include <stdint.h>
+#define D if(AES_DEBUG)
 
 bool AES_DEBUG = false;
 
@@ -253,52 +254,25 @@ int aes_encrypt(uint8_t* cipher, const uint8_t* key, const uint8_t* plaintext){
     }
     uint8_t roundKey[11][16] = {0};
     init_key_schedule(roundKey[0], key);
-    if(AES_DEBUG){
-        printf("init state: \n");
-        print_arr(state, 16);
-    }
+    D{ printf("init state: \n"); print_arr(state, 16); }
     add_roundkey(state, roundKey[0]);
-    if(AES_DEBUG){
-        printf("first add roundky state: \n");
-        print_arr(state, 16);
-    }
+    D{ printf("first add roundky state: \n"); print_arr(state, 16); }
     for(int i =1; i<10; i++){
         sub_byte(state);
-        if(AES_DEBUG){
-            printf("Round:%d subbyte state: \n", i);
-            print_arr(state, 16);
-        }
+        D{ printf("Round:%d subbyte state: \n", i); print_arr(state, 16); }
         shift_row(state);
-        if(AES_DEBUG){
-            printf("Round:%d shift row state: \n", i);
-            print_arr(state, 16);
-        }
+        D{ printf("Round:%d shift row state: \n", i); print_arr(state, 16); }
         mix_column(state);
-        if(AES_DEBUG){
-            printf("Round:%d mix col state: \n", i);
-            print_arr(state, 16);
-        }
+        D{ printf("Round:%d mix col state: \n", i); print_arr(state, 16); }
         add_roundkey(state, roundKey[i]);
-        if(AES_DEBUG){
-            printf("Round:%d add roundkey state: \n", i);
-            print_arr(state, 16);
-        }
+        D{ printf("Round:%d add roundkey state: \n", i); print_arr(state, 16); }
     }
     sub_byte(state);
-    if(AES_DEBUG){
-        printf("Round:%d subbyte state: \n", 10);
-        print_arr(state, 16);
-    }
+    D{ printf("Round:%d subbyte state: \n", 10); print_arr(state, 16); }
     shift_row(state);
-    if(AES_DEBUG){
-        printf("Round:%d shift row state: \n", 10);
-        print_arr(state, 16);
-    }
+    D{ printf("Round:%d shift row state: \n", 10); print_arr(state, 16); }
     add_roundkey(state, roundKey[10]);
-    if(AES_DEBUG){
-        printf("Round:%d add roundkey state: \n", 10);
-        print_arr(state, 16);
-    }
+    D{ printf("Round:%d add roundkey state: \n", 10); print_arr(state, 16); }
     for(int i = 0; i< 16; i++){
         cipher[i] = state[i];
     }
@@ -312,52 +286,25 @@ int aes_decrypt(uint8_t* plaintext, const uint8_t* key, const uint8_t* cipher){
     }
     uint8_t roundKey[11][16] = {0};
     init_key_schedule(roundKey[0], key);
-    if(AES_DEBUG){
-        printf("init state: \n");
-        print_arr(state, 16);
-    }
+    D{ printf("init state: \n"); print_arr(state, 16); }
     add_roundkey(state, roundKey[10]);
-    if(AES_DEBUG){
-        printf("first add roundky state: \n");
-        print_arr(state, 16);
-    }
+    D{ printf("first add roundky state: \n"); print_arr(state, 16); }
     for(int i =9; i>=1; i--){
         inv_shift_row(state);
-        if(AES_DEBUG){
-            printf("Round:%d inv shift row state: \n", i);
-            print_arr(state, 16);
-        }
+        D{ printf("Round:%d inv shift row state: \n", i); print_arr(state, 16); }
         inv_sub_byte(state);
-        if(AES_DEBUG){
-            printf("Round:%d inv subbyte state: \n", i);
-            print_arr(state, 16);
-        }
+        D{ printf("Round:%d inv subbyte state: \n", i); print_arr(state, 16); }
         add_roundkey(state, roundKey[i]);
-        if(AES_DEBUG){
-            printf("Round:%d add roundkey state: \n", i);
-            print_arr(state, 16);
-        }
+        D{ printf("Round:%d add roundkey state: \n", i); print_arr(state, 16); }
         inv_mix_column(state);
-        if(AES_DEBUG){
-            printf("Round:%d inv mix col state: \n", i);
-            print_arr(state, 16);
-        }
+        D{ printf("Round:%d inv mix col state: \n", i); print_arr(state, 16); }
     }
     inv_shift_row(state);
-    if(AES_DEBUG){
-        printf("Round:%d inv shift row state: \n", 10);
-        print_arr(state, 16);
-    }
+    D{ printf("Round:%d inv shift row state: \n", 10); print_arr(state, 16); }
     inv_sub_byte(state);
-    if(AES_DEBUG){
-        printf("Round:%d inv subbyte state: \n", 10);
-        print_arr(state, 16);
-    }
+    D{ printf("Round:%d inv subbyte state: \n", 10); print_arr(state, 16); }
     add_roundkey(state, roundKey[0]);
-    if(AES_DEBUG){
-        printf("Round:%d add roundkey state: \n", 10);
-        print_arr(state, 16);
-    }
+    D{ printf("Round:%d add roundkey state: \n", 10); print_arr(state, 16); }
     for(int i = 0; i< 16; i++){
         plaintext[i] = state[i];
     }
