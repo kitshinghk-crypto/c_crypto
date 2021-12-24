@@ -22,7 +22,7 @@ const static uint32_t k[64] = {
     0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 };
 
-void print_arr(unsigned char* rk, unsigned int len){
+void static print_arr(unsigned char* rk, unsigned int len){
     for(int i =0; i<len; i++){
         printf("%x ", rk[i]);
     }
@@ -52,8 +52,15 @@ void printBits(size_t const size, uint32_t const * const ptr){
 }
 
 int pad(uint8_t * m, size_t pm_len, size_t start_pad_ind){
-    for(size_t i = start_pad_ind; i<pm_len; ++i){
-        *(m+i) = ((1U<<7)*(i==start_pad_ind))|0U;
+    size_t start_byte = (start_pad_ind+1)/8;
+    for(size_t i = start_byte; i<pm_len; ++i){
+        if(i == start_byte){
+            uint8_t offset = (start_pad_ind+1)%8;
+            *(m+i) &= (~0 << (7-offset+1));
+            *(m+i) |= (1 << (7-offset+1));
+        }else{
+            *(m+i) = 0U;
+        }
     }
     return 1;
 }
@@ -110,20 +117,20 @@ int init_w(uint32_t* w, uint8_t* m){
     return 1;
 }
 
-int sha256_hash(uint32_t* out, uint8_t* m){
+int sha256_hash(uint32_t* out, uint8_t* m, size_t len ){
     uint32_t a=ih[0], b=ih[1], c=ih[2], d=ih[3], e=ih[4], f=ih[5], g=ih[6], h=ih[7];
-    size_t len = strlen((char*)m);
+    //size_t len = strlen((char*)m);
     D{printf(" Message : %s\n", (char*)m);}
     D{printf(" Message length: %zu\n", len);}
 
-    size_t m_bit_len = len * sizeof(uint8_t) * 8;
+    size_t m_bit_len = len;
     D{printf(" Message bit length: %zu\n", m_bit_len);}
     size_t byte_pad_len = ((448 + 512)-(m_bit_len+1)%512)%512;
     D{printf(" Message pad bit length: %zu\n", byte_pad_len+1);}
-    size_t padded_m_len = len + (byte_pad_len+1)/8+8;
+    size_t padded_m_len = (len+byte_pad_len+1)/8+8;
     D{printf(" Padded message len: %zu\n", padded_m_len);}
     uint8_t * padded_m = malloc(sizeof(uint8_t)* padded_m_len);
-    for(uint8_t i =0; i< len; ++i){
+    for(size_t i =0; i< len; ++i){
         *(padded_m+i) = m[i];
     }
     pad(padded_m, padded_m_len, len);

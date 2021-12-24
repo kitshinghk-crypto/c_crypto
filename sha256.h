@@ -8,6 +8,6 @@ typedef int bool;
 
 extern bool SHA256_DEBUG;
 
-extern int sha256_hash(uint32_t* hash, uint8_t* m);
+extern int sha256_hash(uint32_t* hash, uint8_t* m, size_t len );
 
 #endif
