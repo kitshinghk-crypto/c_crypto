@@ -35,6 +35,14 @@ int main(void){
     print_arr(cipher, 8);
 
     puts("");
+    //71 62 1 5b 4d ac 25 5d
+    uint8_t cipher3[8] = {0x71, 0x62, 0x01, 0x5b, 0x4d, 0xac, 0x25, 0x5d};
+    uint8_t* p3 = malloc(4 * sizeof(uint8_t*));
+    ccm_aes_decrypt(p3, cipher3, key, n, a, 7, 8, 8, 4);
+    printf("plaintext:\n");
+    print_arr(p3, 8);
+
+    puts("");
     //20212223 24252627 28292a2b 2c2d2e2f
     uint8_t p2[16] = {0x20, 0x21, 0x22, 0x23,
                     0x24, 0x25, 0x26, 0x27, 
@@ -53,4 +61,15 @@ int main(void){
     ccm_aes_encrypt(cipher2, p2, key, n2, a2, 8, 16, 16*sizeof(uint8_t), 6);
     printf("cipher:\n");
     print_arr(cipher2, 22);
+
+
+    puts("");
+    //d2 a1 f0 e0 51 ea 5f 62 8 1a 77 92 7 3d 59 3d 1f c6 4f bf ac cd
+    uint8_t cipher4[22] = {0xd2, 0xa1, 0xf0, 0xe0, 0x51, 0xea, 0x5f, 0x62,
+                        0x08, 0x1a, 0x77, 0x92, 0x07, 0x3d, 0x59, 0x3d,
+                        0x1f, 0xc6, 0x4f, 0xbf, 0xac, 0xcd};
+    uint8_t* p4 = malloc(16 * sizeof(uint8_t*));
+    ccm_aes_decrypt(p4, cipher4, key, n2, a2, 8, 16, 22, 6);
+    printf("plaintext:\n");
+    print_arr(p4, 8);
 }
