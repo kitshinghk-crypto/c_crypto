@@ -1,3 +1,6 @@
+ccmaes_test: ccmaes.o aes.o ccmaes_test.c
+	gcc -o $@ $^
+
 sha256_test: sha256.o sha256_test.c
 	gcc -o $@ $^
 
@@ -14,4 +17,7 @@ aes.o: aes.c
 	gcc -c $^
 
 sha256.o: sha256.c
+	gcc -c $^
+
+ccmaes.o: ccmaes.c
 	gcc -c $^
