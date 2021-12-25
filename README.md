@@ -57,7 +57,7 @@ uint32_t hash[8]={0};
 sha256_hash(hash, m, 512);
 ```
 
-## CCMAES128
+## CCM-AES128
 ccm-aes128 encrypt
 ```C
 uint8_t key[16] = {0x40, 0x41, 0x42, 0x43, 
