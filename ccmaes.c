@@ -114,7 +114,7 @@ int ccm_aes_encrypt(uint8_t* cipher, const uint8_t* plaintext, const uint8_t* ke
     D{printf("T:\n");}
     D{print_arr(y,16);}
     // Compute CTR
-    size_t m = ((plen/32) + (plen%32>0));
+    size_t m = ((plen/16) + (plen%16>0));
     uint8_t** ctr = malloc((m+1) * sizeof(uint8_t*));
     for (size_t i = 0; i < m+1; i++) {
         ctr[i] = malloc(16 * sizeof(uint8_t));
@@ -161,7 +161,7 @@ int ccm_aes_decrypt(uint8_t* plaintext, const uint8_t* cipher, const uint8_t* ke
                             const uint8_t* a, uint8_t nlen, size_t alen, size_t clen, uint8_t tlen){
     uint8_t qlen = 15-nlen;
     //Compute CTR
-    size_t m = (((clen-tlen)/32) + ((clen-tlen)%32>0));
+    size_t m = (((clen-tlen)/16) + ((clen-tlen)%16>0));
     uint8_t** ctr = malloc((m+1) * sizeof(uint8_t*));
     for (size_t i = 0; i < m+1; i++) {
         ctr[i] = malloc(16 * sizeof(uint8_t));
@@ -300,6 +300,6 @@ int ccm_aes_decrypt(uint8_t* plaintext, const uint8_t* cipher, const uint8_t* ke
         }
     }
     D{printf("T valid\n");}
-    
+
     return 1;
 }
