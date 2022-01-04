@@ -86,3 +86,12 @@ uint8_t key[16] = {0x40, 0x41, 0x42, 0x43,
 uint8_t* p = malloc(4 * sizeof(uint8_t*));
 ccm_aes_decrypt(p, cipher, key, n, a, 7, 8, 8, 4);
 ```
+
+# Reference
+DES - Schneier, B., 2007. Applied cryptography: protocols, algorithms, and source code in C. john wiley & sons.
+
+AES - https://www.nist.gov/publications/advanced-encryption-standard-aes
+
+SHA256 - https://csrc.nist.gov/projects/hash-functions
+
+CCMAES - https://csrc.nist.gov/publications/detail/sp/800-38c/final
