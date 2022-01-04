@@ -5,7 +5,7 @@ extern bool DES_DEBUG;
 
 void testdesencrypt(uint8_t* key, uint8_t* pt){
     DES_DEBUG = false;
-    unsigned char cipher[8];
+    uint8_t cipher[8];
     printf("DES encrypt:\n");
     puts("plaintext: ");
     for(int i=0; i<8; ++i){
@@ -28,7 +28,7 @@ void testdesencrypt(uint8_t* key, uint8_t* pt){
 
 void testdesdecrypt(uint8_t* key, uint8_t* cipher){
     DES_DEBUG = false;
-    unsigned char pt[8];
+    uint8_t pt[8];
     printf("DES decrypt:\n");
     puts("chipher: ");
     for(int i=0; i<8; ++i){
