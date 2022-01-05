@@ -72,7 +72,7 @@ uint8_t n[7] = {0x10, 0x11, 0x12, 0x13,
 uint8_t a[8] = {0x00, 0x01, 0x02, 0x03, 
                 0x04, 0x05, 0x06, 0x07}; 
 
-uint8_t* cipher = malloc(8 * sizeof(uint8_t*));
+uint8_t cipher[8] = {0};
 ccm_aes_encrypt(cipher, p, key, n, a, 7, 8, 4*sizeof(uint8_t), 4);
 ```
 
@@ -85,7 +85,7 @@ uint8_t key[16] = {0x40, 0x41, 0x42, 0x43,
                         0x44, 0x45, 0x46, 0x47, 
                         0x48, 0x49, 0x4a, 0x4b, 
                         0x4c, 0x4d, 0x4e, 0x4f};
-uint8_t* p = malloc(4 * sizeof(uint8_t*));
+uint8_t p[4] = {0};
 ccm_aes_decrypt(p, cipher, key, n, a, 7, 8, 8, 4);
 ```
 ## ECC
