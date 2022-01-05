@@ -3,11 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-extern uint8_t WORD_LENGTH;
 extern bool ARITH_DEBUG;
 
 void testadd(){
-    WORD_LENGTH = 8;
     uint16_t* a = malloc(WORD_LENGTH * sizeof(uint16_t));
     uint16_t* b = malloc(WORD_LENGTH * sizeof(uint16_t));
     uint8_t carry =0;
@@ -40,7 +38,6 @@ void testadd(){
 }
 
 void testminus(){
-    WORD_LENGTH = 8;
     uint16_t* a = malloc(WORD_LENGTH * sizeof(uint16_t));
     uint16_t* b = malloc(WORD_LENGTH * sizeof(uint16_t));
     uint8_t carry =0;
@@ -97,7 +94,6 @@ void testminus(){
 }
 
 void testsignsub(){
-    WORD_LENGTH = 8;
     uint16_t* a = malloc(WORD_LENGTH * sizeof(uint16_t));
     uint16_t* b = malloc(WORD_LENGTH * sizeof(uint16_t));
     uint8_t carry =0;
@@ -149,7 +145,6 @@ void testsignsub(){
 }
 
 void testsignadd(){
-    WORD_LENGTH = 8;
     uint16_t* a = malloc(WORD_LENGTH * sizeof(uint16_t));
     uint16_t* b = malloc(WORD_LENGTH * sizeof(uint16_t));
     uint8_t carry =0;
@@ -208,7 +203,6 @@ void testsignadd(){
 }
 
 void testneg(){
-    WORD_LENGTH = 8;
     uint16_t* a = malloc(WORD_LENGTH * sizeof(uint16_t));
     uint16_t* b = malloc(WORD_LENGTH * sizeof(uint16_t));
     uint8_t carry =0;
@@ -229,7 +223,6 @@ void testneg(){
 
 
 void testmodadd(){
-    WORD_LENGTH = 8;
     uint16_t* a = malloc(WORD_LENGTH * sizeof(uint16_t));
     uint16_t* b = malloc(WORD_LENGTH * sizeof(uint16_t));
     uint16_t* p = malloc(WORD_LENGTH * sizeof(uint16_t));
@@ -252,7 +245,6 @@ void testmodadd(){
 
 
 void testmodsub(){
-    WORD_LENGTH = 8;
     uint16_t* a = malloc(WORD_LENGTH * sizeof(uint16_t));
     uint16_t* b = malloc(WORD_LENGTH * sizeof(uint16_t));
     uint16_t* p = malloc(WORD_LENGTH * sizeof(uint16_t));
@@ -289,16 +281,52 @@ void testmodsub(){
     printf("%u\n", carry);
 }
 
+void testmodmult(){
+    uint16_t* a = malloc(WORD_LENGTH * sizeof(uint16_t));
+    uint16_t* b = malloc(WORD_LENGTH * sizeof(uint16_t));
+    uint16_t* p = malloc(WORD_LENGTH * sizeof(uint16_t));
+    uint8_t carry =0;
+    a[0] = 3;
+    b[0] = 9;
+    p[0] = 11;
+
+    printf("Test Mod Mult:\n");
+    printf("a:\n");
+    print_bin(a, WORD_LENGTH);
+    printf("b:\n");
+    print_bin(b, WORD_LENGTH);
+    printf("p:\n");
+    print_bin(p, WORD_LENGTH);
+    mod_mult(a,b,p);
+    printf("a*b mod p:\n");
+    print_bin(a, WORD_LENGTH);
+
+    a[1] = 3;
+    a[0] = 3;
+    b[0] = 9;
+    p[0] = 11;
+
+    printf("Test Mod Mult:\n");
+    printf("a:\n");
+    print_bin(a, WORD_LENGTH);
+    printf("b:\n");
+    print_bin(b, WORD_LENGTH);
+    printf("p:\n");
+    print_bin(p, WORD_LENGTH);
+    mod_mult(a,b,p);
+    printf("a*b mod p:\n");
+    print_bin(a, WORD_LENGTH);
+}
+
 
 void testmult(){
-    WORD_LENGTH = 8;
     uint16_t* a = malloc(WORD_LENGTH * sizeof(uint16_t));
     uint16_t* b = malloc(WORD_LENGTH * sizeof(uint16_t));
     uint16_t* c = malloc(WORD_LENGTH * 2 * sizeof(uint16_t));
     a[0] = 3;
     b[0] = 9;
 
-    printf("Test Mod Sub:\n");
+    printf("Test mult:\n");
     printf("a:\n");
     print_bin(a, WORD_LENGTH);
     printf("b:\n");
@@ -310,7 +338,7 @@ void testmult(){
     a[0] = 255;
     b[0] = 255;
 
-    printf("Test Mod mult:\n");
+    printf("Test mult:\n");
     printf("a:\n");
     print_bin(a, WORD_LENGTH);
     printf("b:\n");
@@ -335,7 +363,7 @@ void testdivide(){
     printf("q:\n");
     print_hex(q,1);
     printf("r:\n");
-    print_hex(r,1);
+    print_hex(r,1); 
     free(q);
     free(r);
     q=NULL; r=NULL;
@@ -379,7 +407,6 @@ void testdivide(){
 }
 
 void testhalf(){
-    WORD_LENGTH = 8;
     uint16_t* a = malloc(WORD_LENGTH * sizeof(uint16_t));
     for(size_t i =0; i< WORD_LENGTH;i++){
         a[i] =0xaa;
@@ -393,7 +420,6 @@ void testhalf(){
 }
 
 void testtimes_two(){
-    WORD_LENGTH = 8;
     uint16_t* a = malloc(WORD_LENGTH * sizeof(uint16_t));
     for(size_t i =0; i< WORD_LENGTH;i++){
         a[i] =0;
@@ -409,7 +435,6 @@ void testtimes_two(){
 
 void testinverse(){
     ARITH_DEBUG = false;
-    WORD_LENGTH = 8;
     uint16_t* inv = malloc(WORD_LENGTH * sizeof(uint16_t));
     uint16_t* x = malloc(WORD_LENGTH * sizeof(uint16_t));
     uint16_t* y = malloc(WORD_LENGTH * sizeof(uint16_t));
@@ -450,9 +475,10 @@ int main(){
     //testmodadd();
     //testmodsub();
     //testmult();
-    testdivide();
+    //testdivide();
     //testhalf();
     //testtimes_two();
     //testinverse();
+    testmodmult();
     return 1;
 }

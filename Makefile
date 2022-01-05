@@ -1,3 +1,6 @@
+ecurve_test: arithmetic.o ecurve.o ecurve_test.c
+	gcc -g -o $@ $^
+
 arith_test: arithmetic.o arith_test.c
 	gcc -o $@ $^
 
@@ -27,3 +30,6 @@ ccmaes.o: ccmaes.c
 
 arithmetic.o: arithmetic.c
 	gcc -c $^
+
+ecurve.o: ecurve.c
+	gcc -c -g $^
