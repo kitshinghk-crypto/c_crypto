@@ -5,6 +5,7 @@ This repository contains a C implementation of crypto functions:
 * **Sysmetric-key Encryption/Decryption**: DES, AES128
 * **Hash Function**: SHA256
 * **Block Cipher Modes of Operation**: ccm-aes128
+* **ECC**: NIST P-256 curve point multiplication
 
 ## DES
 DES encrypt
