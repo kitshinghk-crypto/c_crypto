@@ -29,4 +29,6 @@ extern void copy(uint16_t*, uint16_t*);
 extern void print_hex(uint16_t *, uint8_t);
 extern void print_bin(uint16_t *, uint8_t);
 extern void print_dec(uint16_t *, uint8_t);
+extern int is_zero(uint16_t *);
+extern int is_one(uint16_t *);
 #endif

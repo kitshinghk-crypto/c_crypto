@@ -23,7 +23,7 @@ void print_dec(uint16_t* b, uint8_t len){
 
 void print_hex(uint16_t* b, uint8_t len){
     for(int i = len-1; i>=0; --i){
-        printf("%02x ", b[i]&0x00ff);
+        printf("%02x", b[i]&0x00ff);
     }
     puts("");
 }
@@ -73,7 +73,7 @@ int compare(uint16_t *a, uint16_t*b){
     return 0;
 }
 
-int isZero(uint16_t *a){
+int is_zero(uint16_t *a){
     for(uint8_t i = 0; i<WORD_LENGTH; i++){
         if((a[i]&0xff) > 0){
             return 0;
@@ -82,7 +82,7 @@ int isZero(uint16_t *a){
     return 1;
 }
 
-int isOne(uint16_t *a){
+int is_one(uint16_t *a){
     for(uint8_t i = 1; i<WORD_LENGTH; i++){
         if((a[i]&0xff) > 0){
             return 0;
@@ -273,7 +273,7 @@ void sign_add(uint16_t* x , uint16_t* y, uint8_t* x_neg, uint8_t* y_neg){
 **  Author: Alfred J. Menezes, Paul C. van Oorschot and Scott A. Vanstone
 **  Page: 608, Alg. 14.61 binary extended-gcd algorithm
 **  input: x ,y
-**  output: x^-1 mod y
+**  output: y^-1 mod x
 **  return: inv
 **/
 void inverse(uint16_t *inv, uint16_t* x, uint16_t* y){
@@ -300,7 +300,7 @@ void inverse(uint16_t *inv, uint16_t* x, uint16_t* y){
     }
     d[0]=1;a[0]=1;
     uint8_t carry =0;
-    while(isZero(u)==0){
+    while(is_zero(u)==0){
         D{char str[1]; gets(str);}
         while((u[0]&1U) == 0){
             half(u);
@@ -338,6 +338,13 @@ void inverse(uint16_t *inv, uint16_t* x, uint16_t* y){
     for(uint8_t i =0; i< WORD_LENGTH; ++i){
         inv[i] = d[i];
     }
+
+    if(d_neg == 1){
+        copy(inv, x);
+        sub(inv, d, &carry);
+    }else{
+        copy(inv, d);
+    }
 }
 
 /**
@@ -364,7 +371,7 @@ void divide(uint16_t* q, uint16_t* r, uint16_t*  x, uint16_t*  y, uint8_t n, uin
             yc[i] = y[i-(n-t)];
         }
     }
-    D{printf("xc: ");print_hex(xc, n+1); printf("yc: ");print_hex(yc, n+1);}
+    D{printf("xc: ");print_hex(xc, n+1); printf("yc: ");print_hex(yc, n+1); printf("n: %u\n",n);printf("t: %u\n",t);}
     uint8_t carry = 0;
     while(compare_len(xc, yc, n+1)>=0){
         q[n-t] += 1;
@@ -475,6 +482,14 @@ void mod_mult(uint16_t* a, uint16_t* b, uint16_t* n){
     }
 }
 
+/**
+**  Ref: Guide to elliptic curve cryptography 
+**  Author: Hankerson, D., Menezes, A.J. and Vanstone, S.
+**  Page: 40, Algorithm 2.20 Inversion in Fp using the extended Euclidean algorithm
+**  input: a,p
+**  output: a^-1 mod p
+**  return: inv
+**/
 void inv_p(uint16_t* inv, uint16_t* a, uint16_t* p){
     uint16_t u[WORD_LENGTH] = {0};
     uint16_t v[WORD_LENGTH] = {0};
@@ -486,12 +501,14 @@ void inv_p(uint16_t* inv, uint16_t* a, uint16_t* p){
     uint16_t prod[WORD_LENGTH*2] = {0};
 
     copy(u,a); copy(v,p); x1[0]=1; x2[0]=0;
-    int n,t; uint8_t carry=0;uint8_t x_neg=0;uint8_t zero = 0;uint8_t x1_neg =0;
+    int n,t; uint8_t carry=0;uint8_t zero = 0;
+    uint8_t x_neg=0;uint8_t x1_neg =0;uint8_t x2_neg=0;
     D{printf("Compute inverse:\n");}
-    D{printf("a:\n"); print_dec(a, WORD_LENGTH);}
-    D{printf("p:\n"); print_dec(p, WORD_LENGTH);}
-    while (isOne(u)!=1){
-        D{printf("u:\n"); print_dec(u, WORD_LENGTH);}
+    D{printf("a:\n"); print_hex(a, WORD_LENGTH);}
+    D{printf("p:\n"); print_hex(p, WORD_LENGTH);}
+    while (is_one(u)!=1){
+        D{printf("u:\n"); print_hex(u, WORD_LENGTH);}
+         D{char str[1]; gets(str);}
         for(n=WORD_LENGTH-1; n>=0; n--){
             if(v[n]!=0){
                 break;
@@ -503,17 +520,25 @@ void inv_p(uint16_t* inv, uint16_t* a, uint16_t* p){
             }
         }
         divide(q,r,v,u,n,t);
-        D{printf("q:\n"); print_dec(q, WORD_LENGTH);}
-        D{printf("r:\n"); print_dec(r, WORD_LENGTH);}
+        D{printf("q:\n"); print_hex(q, WORD_LENGTH);}
+        D{printf("r:\n"); print_hex(r, WORD_LENGTH);}
         copy(x,x2);
         for(int i =0; i<2*WORD_LENGTH; i++){
             prod[i] =0;
         }
+        //ARITH_DEBUG = false;
         mult(prod,q,x1);
-        D{printf("prod:\n"); print_dec(prod, WORD_LENGTH);}
+        //ARITH_DEBUG = true;
+        D{printf("prod:\n"); print_hex(prod, WORD_LENGTH);}
+        copy(x,x2);x_neg = x2_neg;
         sign_sub(x,prod,&x_neg,&x1_neg);
-        D{printf("x: %d\n",x_neg); print_dec(x, WORD_LENGTH);}
-        copy(v,u);copy(u,r);copy(x2,x1);copy(x1,x);x1_neg=x_neg;
+        D{printf("x: %d\n",x_neg); print_hex(x, WORD_LENGTH);}
+        copy(v,u);copy(u,r);
+        copy(x2,x1);x2_neg=x1_neg;
+        copy(x1,x);x1_neg=x_neg;
+        for(int i=0; i< WORD_LENGTH; i++){
+            q[i]=0;
+        }
     }
     if(x_neg == 1){
         copy(inv, p);

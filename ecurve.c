@@ -71,8 +71,31 @@ struct epoint_proj* epoint_convert_proj(const struct epoint* p){
     return pj;
 }
 
+void set_epoint_inf(const struct epoint_proj* p){
+    for(int i =0; i< WORD_LENGTH;i++){
+        p->x[i] =0; p->y[i]=0; p->z[i] =0;
+    }
+    p->x[0]=1; p->y[0]=1;
+}
+
+int is_epoint_inf(const struct epoint_proj* p){
+    return is_one(p->x) && is_one(p->y) && is_zero(p->z);
+}
+
+/**
+**  Ref: Guide to elliptic curve cryptography 
+**  Author: Hankerson, D., Menezes, A.J. and Vanstone, S.
+**  Page: 91, Algorithm 3.21 Point doubling (y2 = x3 − 3x + b, Jacobian coordinates)
+**  input: a,p
+**  output: a^-1 mod p
+**  return: inv
+**/
 int p256_point_double(struct epoint_proj* p){
     D{printf("Point Double:\n");print_epoint_proj(p);}
+    if(is_epoint_inf(p)){
+        D{printf("Point at inf:\n");}
+        return 1;
+    }
     uint16_t t1[WORD_LENGTH] = {0};
     uint16_t t2[WORD_LENGTH] = {0};
     uint16_t t3[WORD_LENGTH] = {0};
@@ -154,19 +177,37 @@ int p256_point_double(struct epoint_proj* p){
     return 1;
 }
 
+/**
+**  Ref: Guide to elliptic curve cryptography 
+**  Author: Hankerson, D., Menezes, A.J. and Vanstone, S.
+**  Page: 91, Algorithm 3.22 Point addition (y2 = x3 − 3x + b, affine-Jacobian coordinates)
+**  input: a,p
+**  output: a^-1 mod p
+**  return: inv
+**/
 int p256_point_add(struct epoint_proj* p, struct epoint* q){
     D{printf("Point Addition:\n");print_epoint_proj(p);}
     D{print_epoint(q);}
-    uint16_t * t1 = malloc(sizeof(uint16_t)*WORD_LENGTH);
-    uint16_t * t2 = malloc(sizeof(uint16_t)*WORD_LENGTH);
-    uint16_t * t3 = malloc(sizeof(uint16_t)*WORD_LENGTH);
-    uint16_t * t4 = malloc(sizeof(uint16_t)*WORD_LENGTH);
-    uint16_t * x3 = malloc(sizeof(uint16_t)*WORD_LENGTH);
-    uint16_t * y3 = malloc(sizeof(uint16_t)*WORD_LENGTH);
-    uint16_t * z3 = malloc(sizeof(uint16_t)*WORD_LENGTH);
-    uint16_t * c = malloc(sizeof(uint16_t)*WORD_LENGTH);
+    if(is_epoint_inf(p)){
+        D{printf("Point P at inf:\n");}
+        copy(p->x, q->x);
+        copy(p->y, q->y);
+        for(int i=0; i<WORD_LENGTH; i++){
+            p->z[i] =0;
+        }
+        p->z[0] =1;
+        return 1;
+    }
+    uint16_t t1[WORD_LENGTH] = {0};
+    uint16_t t2[WORD_LENGTH] = {0};
+    uint16_t t3[WORD_LENGTH] = {0};
+    uint16_t t4[WORD_LENGTH] = {0};
+    uint16_t x3[WORD_LENGTH] = {0};
+    uint16_t y3[WORD_LENGTH] = {0};
+    uint16_t z3[WORD_LENGTH] = {0};
+    uint16_t c[WORD_LENGTH]= {0};
     for(int i=0; i< WORD_LENGTH; i++){
-        t1[i]=p->z[i];t2[i]=p->z[i];x3[i]=0;y3[i]=0;z3[i]=p->z[i];c[i]=0;t3[i]=0;t4[i]=0;
+        t1[i]=p->z[i];t2[i]=p->z[i];z3[i]=p->z[i];
     }
     //t1=k((z1)^2)
     mod_mult(t1,t1,P256);
@@ -186,6 +227,25 @@ int p256_point_add(struct epoint_proj* p, struct epoint* q){
     //t2=k(t2-y1)
     mod_sub(t2,p->y,P256);
     D{printf("t2:\n");print_hex(t2, WORD_LENGTH);}
+    if(is_zero(t1)){
+        if(is_zero(t2)){
+            D{printf("P=Q, compute 2P\n");}
+            copy(p->x, q->x);
+            copy(p->y, q->y);
+            for(int i=0; i<WORD_LENGTH; i++){
+                p->z[i] =0;
+            }
+            p->z[0] =1;
+            p256_point_double(p);
+        }else{
+             D{printf("Q=-P, return infinity\n");}
+            for(int i =0; i< WORD_LENGTH;i++){
+                p->x[i] = 0;p->y[i] = 0;p->z[i] = 0;
+            }
+            p->x[0] =1;p->y[0] = 1;
+        }
+        return 1;
+    }
     //z3=k(z1*t1)
     mod_mult(z3,t1,P256);
     D{printf("z3:\n");print_hex(z3, WORD_LENGTH);}
@@ -232,8 +292,43 @@ int p256_point_add(struct epoint_proj* p, struct epoint* q){
     copy(p->x, x3);
     copy(p->y, y3);
     copy(p->z, z3);
+    return 1;
+}
 
-    free(t1);free(t2);free(t3);free(t4);free(x3);free(y3);free(z3);free(c);
-    t1=NULL;t2=NULL;t3=NULL;t4=NULL;x3=NULL;y3=NULL;z3=NULL;c=NULL;
+struct epoint* p256_proj_to_affine(struct epoint_proj* p){
+    struct epoint* ap = epoint_init();
+    uint16_t t[WORD_LENGTH] = {0};
+    uint16_t z2inv[WORD_LENGTH] = {0};
+    uint16_t z3inv[WORD_LENGTH] = {0};
+    copy(t, p->z);
+    mod_mult(t,p->z,P256);
+    D{printf("z^2\n"); print_hex(t, WORD_LENGTH);}
+    inv_p(z2inv,t,P256);
+    D{printf("z^-2\n"); print_hex(z2inv, WORD_LENGTH);}
+    mod_mult(t,p->z,P256);
+    D{printf("z^3\n"); print_hex(t, WORD_LENGTH);}
+    inv_p(z3inv,t,P256);
+    D{printf("z^-3\n"); print_hex(z3inv, WORD_LENGTH);}
+    copy(ap->x, p->x);
+    copy(ap->y, p->y);
+    mod_mult(ap->x, z2inv, P256);
+    mod_mult(ap->y, z3inv, P256);
+    return ap;
+}
+
+int p256_scalar_mult(struct epoint* kp, uint16_t* k, struct epoint* p){
+    struct epoint_proj* q = epoint_proj_init();
+    set_epoint_inf(q);
+    for(int i=255;i>=0;i--){
+        uint8_t bit = (k[i/8] >> (i%8)) & 1U;
+        p256_point_double(q);
+        if(bit == 1){
+            p256_point_add(q,p);
+        }
+    }
+    //print_epoint_proj(q);
+    struct epoint* ap  = p256_proj_to_affine(q);
+    copy(kp->x, ap->x);
+    copy(kp->y, ap->y);
     return 1;
 }
