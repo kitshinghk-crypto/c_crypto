@@ -16,22 +16,6 @@ uint16_t py[32] ={0xf5, 0x51, 0xbf, 0x37, 0x68, 0x40, 0xb6, 0xcb,
                 0x16, 0x9e, 0x0f, 0x7c, 0x4a, 0xeb, 0xe7, 0x8e,
                 0x9b, 0x7f, 0x1a, 0xfe, 0xe2, 0x42, 0xe3, 0x4f};
 
-//x1: 7c f2 7b 18 8d 03 4f 7e 8a 52 38 03 04 b5 1a c3 c0 89 69 e2 77 f2 1b 35 a6 0b 48 fc 47 66 99 78
-uint16_t p2x[32] = {0x78, 0x99, 0x66, 0x47, 0xfc, 0x48, 0x0b, 0xa6,
-                    0x35, 0x1b, 0xf2, 0x77, 0xe2, 0x69, 0x89, 0xc0,
-                    0xc3, 0x1a, 0xb5, 0x04, 0x03, 0x38, 0x52, 0x8a,
-                    0x7e, 0x4f, 0x03, 0x8d, 0x18, 0x7b, 0xf2, 0x7c};
-//y1: 07 77 55 10 db 8e d0 40 29 3d 9a c6 9f 74 30 db ba 7d ad e6 3c e9 82 29 9e 04 b7 9d 22 78 73 d1
-uint16_t p2y[32] = {0xd1, 0x73, 0x78, 0x22, 0x9d, 0xb7, 0x04, 0x9e,
-                    0x29, 0x82, 0xe9, 0x3c, 0xe6, 0xad, 0x7d, 0xba,
-                    0xdb, 0x30, 0x74, 0x9f, 0xc6, 0x9a, 0x3d, 0x29,
-                    0x40, 0xd0, 0x8e, 0xdb, 0x10, 0x55, 0x77, 0x07};
-//scalar=0xa1 39 91 07 54 71 b2 9f cd 6c 28 ef c5 67 df 97 04 b7 57 eb 6c bd 2c db ba f5 98 ae ba b4 2d 58
-uint16_t k[32] = {0x58, 0x2d, 0xb4, 0xba, 0xae, 0x98, 0xf5, 0xba,
-                    0xdb, 0x2c, 0xbd, 0x6c, 0xeb, 0x57, 0xb7, 0x04,
-                    0x97, 0xdf, 0x67, 0xc5, 0xef, 0x28, 0x6c, 0xcd,
-                    0x9f, 0xb2, 0x71, 0x54, 0x07, 0x91, 0x39, 0xa1};
-
 uint16_t k2[32] = {0x57, 0x03, 0x80, 0x39, 0x3c, 0x36, 0x6c, 0xd8,
                     0x34, 0x29, 0xf3, 0xb1, 0xa9, 0x79, 0xb5, 0x93,
                     0xf0, 0x41, 0xa5, 0x80, 0x88, 0x74, 0x60, 0xc8,
@@ -140,38 +124,6 @@ int is_equal_epoint(struct epoint* p, uint16_t* x, uint16_t* y){
     return 1;
 }
 
-void p256_double_test(){
-    ARITH_DEBUG = false;
-    ECURVE_DEBUG = false;
-    printf("P256 Point Double test:\n");
-    struct epoint_proj* p = epoint_proj_init();
-    for (int i=0; i<WORD_LENGTH; i++){
-        p->x[i] = px[i];
-        p->y[i] = py[i];
-    }
-    p->z[0] = 1;
-    p256_point_double(p);
-    print_epoint_proj(p);
-}
-
-void p256_add_test(){
-    ARITH_DEBUG = false;
-    ECURVE_DEBUG = false;
-    printf("P256 Point Addition test:\n");
-    struct epoint_proj* p = epoint_proj_init();
-    struct epoint* q = epoint_init();
-    for (int i=0; i<WORD_LENGTH; i++){
-        p->x[i] = p2x[i];
-        p->y[i] = p2y[i];
-        q->x[i] = px[i];
-        q->y[i] = py[i];
-    }
-    p->z[0] = 1;
-    p256_point_add(p,q);
-    print_epoint_proj(p);
-    struct epoint* ap = p256_proj_to_affine(p);
-    print_epoint(ap);
-}
 
 void p256_scalar_mult_test(){
     ARITH_DEBUG = false;
@@ -183,8 +135,7 @@ void p256_scalar_mult_test(){
         p->x[i] = px[i];
         p->y[i] = py[i];
     }
-    p256_scalar_mult(q, k, p);
-    print_epoint(q);
+
     p256_scalar_mult(q, k2, p);
     print_epoint(q);
     assert(is_equal_epoint(q, qx2, qy2));
@@ -218,28 +169,6 @@ void p256_scalar_mult_test(){
     assert(is_equal_epoint(q, qx9, qy9));
 }
 
-void P256_inv_test(){
-    ARITH_DEBUG = false;
-    ECURVE_DEBUG = false;
-    uint16_t P256[32] ={0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
-                    0xff,0xff,0xff,0xff,0x00,0x00,0x00,0x00,
-                    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-                    0x01,0x00,0x00,0x00,0xff,0xff,0xff,0xff};
-    uint16_t inv[32] = {0};
-    uint16_t two[32] = {2};
-    inv_p(inv, two, P256);
-    printf("inverse test:\n");
-    print_hex(inv, 32); 
-
-    uint16_t inv2[32] = {0};
-    printf("inverse test:\n");
-    inverse(inv2, P256, two);
-    print_hex(inv2, 32); 
-}
-
 int main(){
-    p256_double_test();
-    p256_add_test();
-    P256_inv_test();g
     p256_scalar_mult_test();
 }
