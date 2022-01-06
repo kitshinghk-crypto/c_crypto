@@ -18,7 +18,7 @@ void print_arr32(uint32_t* rk, unsigned int len){
 }
 
 void testsha256(uint8_t* m, size_t len){
-    SHA256_DEBUG = false;
+    SHA256_DEBUG = true;
     uint32_t hash[8]={0};
     sha256_hash(hash, m, len);
     printf("SHA256 hash:\n");
@@ -51,5 +51,5 @@ int main(){
                 0xf5, 0x39, 0x31, 0xab, 0x08, 0xc3, 0x8c, 0xf1, 0x71, 
                 0x18, 0x20, 0xc2, 0x99, 0x0d, 0x3b, 0xc2, 0xe6, 0x80, 
                 0x14, 0xdf, 0xde, 0xed, 0x0b, 0x83, 0x90};
-    testsha256(m3, 485);      
+    testsha256(m3, 485);    
 }
