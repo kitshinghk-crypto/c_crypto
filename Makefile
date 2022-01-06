@@ -1,6 +1,9 @@
 ecurve_test: arithmetic.o ecurve.o ecurve_test.c
 	gcc -g -o $@ $^
 
+sha256_8u_test: sha256_8u.o sha256_8u_test.c
+	gcc -o $@ $^
+
 arith_test: arithmetic.o arith_test.c
 	gcc -o $@ $^
 
@@ -23,6 +26,9 @@ aes.o: aes.c
 	gcc -c $^
 
 sha256.o: sha256.c
+	gcc -c $^
+
+sha256_8u.o: sha256_8u.c
 	gcc -c $^
 
 ccmaes.o: ccmaes.c
