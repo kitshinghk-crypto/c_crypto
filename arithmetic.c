@@ -277,15 +277,20 @@ void sign_add(uint16_t* x , const uint16_t* y, uint8_t* x_neg, uint8_t* y_neg){
 **  return: inv
 **/
 void inverse(uint16_t *inv, const uint16_t* x, const uint16_t* y){
-    uint16_t* g = malloc(WORD_LENGTH*sizeof(uint16_t));
+    uint16_t g[WORD_LENGTH] = {0};
+    uint16_t xc[WORD_LENGTH] = {0};
+    uint16_t yc[WORD_LENGTH] = {0};
+    for(size_t i=0; i< WORD_LENGTH; i++){
+        xc[i]=x[i];yc[i]=y[i];
+    }
     D{printf("Start compute inverse\n");}
     for(uint8_t i=0; i<WORD_LENGTH; ++i){
         g[i]=0;
     }
     g[0]=1;
     D{printf("Before step 2\n"); printf("x: \n");print_bin(x,WORD_LENGTH);printf("y: \n");print_bin(y,WORD_LENGTH);}
-    while((x[0]&1u)==0 && (y[0]&1u)==0){
-        half(x); half(y);times_two(g);
+    while((xc[0]&1u)==0 && (yc[0]&1u)==0){
+        half(xc); half(yc);times_two(g);
         D{printf("After step 2\n"); printf("x: \n");print_bin(x,WORD_LENGTH);printf("y: \n");print_bin(y,WORD_LENGTH);printf("g: \n");print_bin(g,WORD_LENGTH);};
     }
     uint16_t u[32]= {0};
