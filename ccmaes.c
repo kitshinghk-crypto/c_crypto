@@ -7,7 +7,7 @@
 
 bool CCMAES_DEBUG = false;
 
-void static print_arr(uint8_t* rk, size_t len){
+void static print_arr(const uint8_t* rk, size_t len){
     for(size_t i = 0; i<len; ++i){
         printf("%x ", rk[i]);
     }
@@ -15,7 +15,7 @@ void static print_arr(uint8_t* rk, size_t len){
 }
 
 // x = x ^ y
-int xor(uint8_t* x, uint8_t* y, size_t len){
+int static xor(uint8_t* x, const uint8_t* y, size_t len){
     for(size_t i=0; i< len; i++){
         x[i] = x[i] ^ y[i];
     }

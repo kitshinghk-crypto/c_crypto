@@ -22,7 +22,7 @@ extern struct epoint_proj* epoint_proj_init();
 extern void print_epoint(const struct epoint*  );
 extern void print_epoint_proj(const struct epoint_proj* );
 extern int p256_point_double(struct epoint_proj* );
-extern int p256_point_add(struct epoint_proj* , struct epoint* );
-extern int p256_scalar_mult(struct epoint*, uint16_t*, struct epoint*);
+extern int p256_point_add(struct epoint_proj* , const struct epoint* );
+extern int p256_scalar_mult(struct epoint*, const uint16_t*, const struct epoint*);
 extern struct epoint* p256_proj_to_affine(struct epoint_proj* );
 #endif

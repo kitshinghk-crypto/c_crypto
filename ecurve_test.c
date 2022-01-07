@@ -240,6 +240,6 @@ void P256_inv_test(){
 int main(){
     p256_double_test();
     p256_add_test();
-    P256_inv_test();g
+    P256_inv_test();
     p256_scalar_mult_test();
 }
