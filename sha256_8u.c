@@ -7,7 +7,7 @@
 
 bool SHA256_8U_DEBUG = false;
 
-static uint8_t ih[8][4] = {
+const static uint8_t ih[8][4] = {
     {0x6a,0x09,0xe6,0x67}, 
     {0xbb,0x67,0xae,0x85}, 
     {0x3c,0x6e,0xf3,0x72}, 
@@ -18,7 +18,7 @@ static uint8_t ih[8][4] = {
     {0x5b,0xe0,0xcd,0x19}
 };
 
-static uint8_t k[64][4] = {
+const static uint8_t k[64][4] = {
     {0x42,0x8a,0x2f,0x98}, {0x71,0x37,0x44,0x91}, {0xb5,0xc0,0xfb,0xcf}, {0xe9,0xb5,0xdb,0xa5}, {0x39,0x56,0xc2,0x5b}, {0x59,0xf1,0x11,0xf1}, {0x92,0x3f,0x82,0xa4}, {0xab,0x1c,0x5e,0xd5},
     {0xd8,0x07,0xaa,0x98}, {0x12,0x83,0x5b,0x01}, {0x24,0x31,0x85,0xbe}, {0x55,0x0c,0x7d,0xc3}, {0x72,0xbe,0x5d,0x74}, {0x80,0xde,0xb1,0xfe}, {0x9b,0xdc,0x06,0xa7}, {0xc1,0x9b,0xf1,0x74},
     {0xe4,0x9b,0x69,0xc1}, {0xef,0xbe,0x47,0x86}, {0x0f,0xc1,0x9d,0xc6}, {0x24,0x0c,0xa1,0xcc}, {0x2d,0xe9,0x2c,0x6f}, {0x4a,0x74,0x84,0xaa}, {0x5c,0xb0,0xa9,0xdc}, {0x76,0xf9,0x88,0xda},
@@ -57,7 +57,7 @@ int pad_m_len(uint8_t * m, size_t pm_len, size_t m_len){
     return 1;
 }
 
-void copy(uint8_t* to, uint8_t* from, size_t len){
+void copy(uint8_t* to, const uint8_t* from, size_t len){
     for(size_t i =0; i< len; i++){
         to[i] = from[i];
     }
@@ -73,13 +73,13 @@ void rotr(uint8_t* x, size_t shift){
     copy(x,tmp,4);
  }
 
- void x_or(uint8_t* x, uint8_t* y, size_t len){
+ void x_or(uint8_t* x, const uint8_t* y, size_t len){
      for(size_t i =0; i< len; i++){
          x[i] ^= y[i];
      }
  }
 
-void w_and(uint8_t* x, uint8_t* y, size_t len){
+void w_and(uint8_t* x, const uint8_t* y, size_t len){
      for(size_t i =0; i< len; i++){
          x[i] &= y[i];
      }
@@ -91,7 +91,7 @@ void w_and(uint8_t* x, uint8_t* y, size_t len){
      }
  }
 
- void w_add(uint8_t* x,uint8_t* y,size_t len){
+ void w_add(uint8_t* x,const uint8_t* y,size_t len){
      uint8_t carry = 0;
      uint16_t tmp = 0;
      for(int i =len-1; i>=0; --i){
@@ -144,7 +144,7 @@ void func_e1(uint8_t* x){
     x_or(x,tmp1,4); x_or(x,tmp2,4);
 }
 
-void func_ch(uint8_t* x, uint8_t* y, uint8_t* z){
+void func_ch(uint8_t* x, const uint8_t* y, const uint8_t* z){
     //return (((x) & (y)) ^ (~(x) & (z)));
     uint8_t tmp1[4] ={0};  copy(tmp1,x,4);
     w_and(x,y,4);
@@ -152,7 +152,7 @@ void func_ch(uint8_t* x, uint8_t* y, uint8_t* z){
     x_or(x,tmp1,4);
 }
 
-void func_maj(uint8_t* x, uint8_t* y, uint8_t* z){
+void func_maj(uint8_t* x, const uint8_t* y, const uint8_t* z){
     //return (((x) & (y)) ^ ((x) & (z)) ^ ((y) & (z)));
     uint8_t tmp1[4] ={0};uint8_t tmp2[4] ={0};
     copy(tmp1,x,4);copy(tmp2,y,4);
@@ -160,7 +160,7 @@ void func_maj(uint8_t* x, uint8_t* y, uint8_t* z){
     x_or(x,tmp1,4);x_or(x,tmp2,4);
 }
 
-void init_w(uint8_t* w, uint8_t* m){
+void init_w(uint8_t* w, const uint8_t* m){
     uint8_t tmp1[4] ={0};
     uint8_t tmp2[4] ={0};
     uint8_t tmp3[4] ={0};
@@ -187,7 +187,7 @@ void init_h(uint8_t* h){
     }
 }
 
-int sha256_8u_hash(uint8_t* out, uint8_t* m, size_t len ){
+int sha256_8u_hash(uint8_t* out, const uint8_t* m, size_t len ){
     //uint32_t a=ih[0], b=ih[1], c=ih[2], d=ih[3], e=ih[4], f=ih[5], g=ih[6], h=ih[7];
     uint8_t a[4]={0}; uint8_t b[4]={0}; uint8_t c[4]={0}; uint8_t d[4]={0}; 
     uint8_t e[4]={0}; uint8_t f[4]={0}; uint8_t g[4]={0}; uint8_t h[4]={0};

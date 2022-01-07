@@ -8,12 +8,12 @@
 
 bool ECURVE_DEBUG = false;
 //p=0xff ff ff ff 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 ff ff ff ff ff ff ff ff ff ff ff ff
-uint16_t P256[32] ={0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+const uint16_t P256[32] ={0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
                     0xff,0xff,0xff,0xff,0x00,0x00,0x00,0x00,
                     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
                     0x01,0x00,0x00,0x00,0xff,0xff,0xff,0xff};
 //2inv=0x7f ff ff ff 80 00 00 00 80 00 00 00 00 00 00 00 00 00 00 00 80 00 00 00 00 00 00 00 00 00 00 00
-uint16_t P256_2_inv[32]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+const uint16_t P256_2_inv[32]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
                         0x00,0x00,0x00,0x80,0x00,0x00,0x00,0x00,
                         0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x80,
                         0x00,0x00,0x00,0x80,0xff,0xff,0xff,0x7f};
@@ -185,7 +185,7 @@ int p256_point_double(struct epoint_proj* p){
 **  output: a^-1 mod p
 **  return: inv
 **/
-int p256_point_add(struct epoint_proj* p, struct epoint* q){
+int p256_point_add(struct epoint_proj* p, const struct epoint* q){
     D{printf("Point Addition:\n");print_epoint_proj(p);}
     D{print_epoint(q);}
     if(is_epoint_inf(p)){
@@ -316,7 +316,8 @@ struct epoint* p256_proj_to_affine(struct epoint_proj* p){
     return ap;
 }
 
-int p256_scalar_mult(struct epoint* kp, uint16_t* k, struct epoint* p){
+
+int p256_scalar_mult(struct epoint* kp, const uint16_t* k, const struct epoint* p){
     struct epoint_proj* q = epoint_proj_init();
     set_epoint_inf(q);
     for(int i=255;i>=0;i--){
@@ -326,7 +327,6 @@ int p256_scalar_mult(struct epoint* kp, uint16_t* k, struct epoint* p){
             p256_point_add(q,p);
         }
     }
-    //print_epoint_proj(q);
     struct epoint* ap  = p256_proj_to_affine(q);
     copy(kp->x, ap->x);
     copy(kp->y, ap->y);

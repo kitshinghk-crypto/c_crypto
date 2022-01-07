@@ -119,7 +119,7 @@ static const uint8_t fp_matrix[64] ={
     34, 2, 42, 10, 50, 18, 58, 26, 33, 1, 41, 9, 49, 17, 57, 25
 };
 
-void print_arr(uint8_t* rk, uint8_t len){
+void print_arr(const uint8_t* rk, uint8_t len){
     for(int i =0; i<len; ++i){
         printf("%x ", rk[i]);
     }
