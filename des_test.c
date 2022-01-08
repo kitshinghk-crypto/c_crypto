@@ -67,6 +67,8 @@ int main(void){
     uint8_t actual_pt[8]={0};
     des_encrypt(actual_cipher, key, pt);
     assert(is_equal(cipher, actual_cipher));
+    printf("PASS DES encrypt\n");
     des_decrypt(actual_pt, key, cipher);
     assert(is_equal(pt, actual_pt));
+    printf("PASS DES decrypt\n");
 }

@@ -47,14 +47,14 @@ static const uint8_t aes_inv_sbox[256] = {
   0xa0, 0xe0, 0x3b, 0x4d, 0xae, 0x2a, 0xf5, 0xb0, 0xc8, 0xeb, 0xbb, 0x3c, 0x83, 0x53, 0x99, 0x61,
   0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d };
 
-void print_arr(const uint8_t* rk, unsigned int len){
+void static print_arr(const uint8_t* rk, unsigned int len){
     for(int i =len-1; i>=0; i--){
         printf("%x ", rk[len-1-i]);
     }
     puts("");
 }
 
-void printBits(size_t const size, void const * const ptr){
+void static printBits(size_t const size, void const * const ptr){
     unsigned char *b = (unsigned char*) ptr;
     unsigned char byte;
     int i, j;
@@ -78,7 +78,7 @@ void printBits(size_t const size, void const * const ptr){
 ** W2 = (20, 4B, 75, 6E) = (roundkey[0][8] roundkey[0][9] roundkey[0][10] roundkey[0][11])
 ** W3 = (67, 20, 46, 75) = (roundkey[0][12] roundkey[0][13] roundkey[0][14] roundkey[0][15])
 **/
-int init_key_schedule(uint8_t* roundkey, const uint8_t* key){
+int static init_key_schedule(uint8_t* roundkey, const uint8_t* key){
     for(uint8_t i=0; i<16; i++){
         *(roundkey+0*16+i) = key[i];
     }
@@ -121,7 +121,7 @@ uint8_t xtime(uint8_t x){
   return ((x<<1) ^ (((x>>7) & 1) * 0x1b));
 }
 
-uint8_t Multiply(uint8_t x, uint8_t y){
+uint8_t static Multiply(uint8_t x, uint8_t y){
   return (((y & 1) * x) ^
        ((y>>1 & 1) * xtime(x)) ^
        ((y>>2 & 1) * xtime(xtime(x))) ^
@@ -129,28 +129,28 @@ uint8_t Multiply(uint8_t x, uint8_t y){
        ((y>>4 & 1) * xtime(xtime(xtime(xtime(x)))))); /* this last call to xtime() can be omitted */
 }
 
-int add_roundkey(uint8_t* state, const uint8_t* roundkey){
+int static add_roundkey(uint8_t* state, const uint8_t* roundkey){
     for(int i=0; i<16; i++){
         state[i]^=roundkey[i];
     }
     return 0;
 }
 
-int sub_byte(uint8_t* state){
+int static sub_byte(uint8_t* state){
     for(int i=0; i<16; i++){
         state[i] = aes_sbox[state[i]];
     }
     return 0;
 }
 
-int inv_sub_byte(uint8_t* state){
+int static inv_sub_byte(uint8_t* state){
     for(int i=0; i<16; i++){
         state[i] = aes_inv_sbox[state[i]];
     }
     return 0;
 }
 
-int shift_row(uint8_t* state){
+int static shift_row(uint8_t* state){
     uint8_t tmp = state[1];
     state[1] = state[5];
     state[5] = state[9];
@@ -173,7 +173,7 @@ int shift_row(uint8_t* state){
     return 0;
 }
 
-int inv_shift_row(uint8_t* state){
+int static inv_shift_row(uint8_t* state){
     uint8_t tmp = state[1];
     state[1] = state[13];
     state[13] = state[9];
@@ -196,7 +196,7 @@ int inv_shift_row(uint8_t* state){
     return 0;
 }
 
-int mix_one_col(uint8_t* col){
+int static mix_one_col(uint8_t* col){
     uint8_t a[4]={0};
     uint8_t b[4]={0};
     uint8_t c;
@@ -214,14 +214,14 @@ int mix_one_col(uint8_t* col){
     return 0;
 }
 
-int mix_column(uint8_t* state){
+int static mix_column(uint8_t* state){
     for(int i=0; i<16; i+=4){
         mix_one_col(&state[i]);
     }
     return 0;
 }
 
-int inv_mix_one_col(uint8_t* col){
+int static inv_mix_one_col(uint8_t* col){
     uint8_t a, b, c, d;
     a = col[0];
     b = col[1];
@@ -235,7 +235,7 @@ int inv_mix_one_col(uint8_t* col){
     return 0;
 }
 
-int inv_mix_column(uint8_t* state){
+int static inv_mix_column(uint8_t* state){
     for(int i=0; i<16; i+=4){
         inv_mix_one_col(&state[i]);
     }
@@ -247,7 +247,7 @@ int inv_mix_column(uint8_t* state){
 **       0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
 ** 
 **/
-int aes_encrypt(uint8_t* cipher, const uint8_t* key, const uint8_t* plaintext){
+void aes_encrypt(uint8_t* cipher, const uint8_t* key, const uint8_t* plaintext){
     uint8_t state[16] = {0};
     for(int i =0; i<16; i++){
         state[i] = plaintext[i];
@@ -276,10 +276,9 @@ int aes_encrypt(uint8_t* cipher, const uint8_t* key, const uint8_t* plaintext){
     for(int i = 0; i< 16; i++){
         cipher[i] = state[i];
     }
-    return 0;
 }
 
-int aes_decrypt(uint8_t* plaintext, const uint8_t* key, const uint8_t* cipher){
+void aes_decrypt(uint8_t* plaintext, const uint8_t* key, const uint8_t* cipher){
     uint8_t state[16] = {0};
     for(int i =0; i<16; i++){
         state[i] = cipher[i];
@@ -308,5 +307,4 @@ int aes_decrypt(uint8_t* plaintext, const uint8_t* key, const uint8_t* cipher){
     for(int i = 0; i< 16; i++){
         plaintext[i] = state[i];
     }
-    return 0;
 }

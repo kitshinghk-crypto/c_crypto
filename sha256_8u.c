@@ -187,7 +187,7 @@ void static init_h(uint8_t* h){
     }
 }
 
-int sha256_8u_hash(uint8_t* out, const uint8_t* m, size_t len ){
+void sha256_8u_hash(uint8_t* out, const uint8_t* m, size_t len ){
     //uint32_t a=ih[0], b=ih[1], c=ih[2], d=ih[3], e=ih[4], f=ih[5], g=ih[6], h=ih[7];
     uint8_t a[4]={0}; uint8_t b[4]={0}; uint8_t c[4]={0}; uint8_t d[4]={0}; 
     uint8_t e[4]={0}; uint8_t f[4]={0}; uint8_t g[4]={0}; uint8_t h[4]={0};
@@ -270,5 +270,4 @@ int sha256_8u_hash(uint8_t* out, const uint8_t* m, size_t len ){
             out[i*4+j] = hash[i][j];
         }
     }
-    return 1;
 }

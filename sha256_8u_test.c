@@ -32,8 +32,8 @@ int is_equal(uint8_t* expected, uint8_t* actual){
 }
 
 int main(){
-    uint8_t m[12]={0x68, 0x65, 0x6C, 0x6C ,0x6F ,0x20 ,0x77 ,0x6F, 0x72, 0x6C, 0x64};
-    testsha256(m, 88);
+    //uint8_t m[12]={0x68, 0x65, 0x6C, 0x6C ,0x6F ,0x20 ,0x77 ,0x6F, 0x72, 0x6C, 0x64};
+    //testsha256(m, 88);
 
     //expect: f757fe6ec7239f7e9f6accade3990a15e74e435a932c48ecccfa70a66c3fdb9d
     uint8_t m2[64] = {0xf6, 0xbb, 0x5d, 0x59, 0xb0, 0xfa, 0x9d, 0xe0, 
@@ -50,6 +50,7 @@ int main(){
     printf("hash:\n");
     print_arr(hash1, 32);
     assert(is_equal(hash1, expected_hash1));
+    printf("PASS SHA256 hash test 1\n");
 
     //expect: 5ca6a57e2ecc12065487f1d4d75aa27b16df44cb41a64d2b6d509321e2d14b5b
     //        5ca6a57e2ecc12065487f1d4d75aa27b16df44cb41a64d2b6d509321e2d14b5b
@@ -66,4 +67,5 @@ int main(){
     printf("hash:\n");
     print_arr(hash2, 32);
     assert(is_equal(hash2, expected_hash2)); 
+    printf("PASS SHA256 hash test 2\n");
 }

@@ -6,6 +6,6 @@ typedef int bool;
 #define false 0
 
 extern bool DES_DEBUG;
-extern int des_encrypt(uint8_t*, const uint8_t*, const uint8_t*);
-extern int des_decrypt(uint8_t*, const uint8_t*, const uint8_t*);
+extern void des_encrypt(uint8_t*, const uint8_t*, const uint8_t*);
+extern void des_decrypt(uint8_t*, const uint8_t*, const uint8_t*);
 #endif

@@ -119,14 +119,14 @@ static const uint8_t fp_matrix[64] ={
     34, 2, 42, 10, 50, 18, 58, 26, 33, 1, 41, 9, 49, 17, 57, 25
 };
 
-void print_arr(const uint8_t* rk, uint8_t len){
+void static print_arr(const uint8_t* rk, uint8_t len){
     for(int i =0; i<len; ++i){
         printf("%x ", rk[i]);
     }
     puts("");
 }
 
-void printBits(size_t const size, void const * const ptr){
+void static printBits(size_t const size, void const * const ptr){
     uint8_t *b = (uint8_t*) ptr;
     uint8_t byte;
     int i, j;
@@ -141,7 +141,7 @@ void printBits(size_t const size, void const * const ptr){
     puts("");
 }
 
-int ip(uint8_t* pt){
+int static ip(uint8_t* pt){
     uint8_t tmp[8];
     for (uint8_t i=0; i<8; i++){
         tmp[i] = pt[i];
@@ -154,7 +154,7 @@ int ip(uint8_t* pt){
     return 0;
 }
 
-int fp(uint8_t* pt){
+int static fp(uint8_t* pt){
     uint8_t tmp[8];
     for (uint8_t i=0; i<8; i++){
         tmp[i] = pt[i];
@@ -168,7 +168,7 @@ int fp(uint8_t* pt){
 }
 
 
-int key_permutation(uint8_t * pk, const uint8_t * k){
+int static key_permutation(uint8_t * pk, const uint8_t * k){
     for (int i=0; i<56; i++){
         uint8_t ind = key_permutation_matrix[i]-1;
         uint8_t bit = (k[ind/8] >> (8-ind%8-1)) & 1U;
@@ -177,7 +177,7 @@ int key_permutation(uint8_t * pk, const uint8_t * k){
     return 0;
 }
 
-int key_rotate_1(uint8_t * k){
+int static key_rotate_1(uint8_t * k){
     uint8_t tmp[7];
     for (uint8_t i=0; i<7; i++){
         tmp[i] = k[i];
@@ -189,7 +189,7 @@ int key_rotate_1(uint8_t * k){
     return 0;
 }
 
-int key_rotate_2(uint8_t * k){
+int static key_rotate_2(uint8_t * k){
     uint8_t tmp[7];
     for (uint8_t i=0; i<7; i++){
         tmp[i] = k[i];
@@ -201,7 +201,7 @@ int key_rotate_2(uint8_t * k){
     return 0;
 }
 
-int key_compress(uint8_t * ck, uint8_t* k){
+int static key_compress(uint8_t * ck, uint8_t* k){
     for (uint8_t i=0; i<48; i++){
         uint8_t ind =  key_compress_matrix[i]-1;
         uint8_t bit = (k[ind/8] >> (8-ind%8-1)) & 1U;
@@ -210,7 +210,7 @@ int key_compress(uint8_t * ck, uint8_t* k){
     return 0;
 }
 
-int expansion(uint8_t * em, uint8_t* m){
+int static expansion(uint8_t * em, uint8_t* m){
     for (int i=0; i<48; i++){
         uint8_t ind = exp_matrix[i]-1;
         uint8_t bit = (m[ind/8] >> (8-ind%8-1)) & 1U;
@@ -219,7 +219,7 @@ int expansion(uint8_t * em, uint8_t* m){
     return 0;
 }
 
-uint8_t sbox(uint8_t box_num, uint8_t input){
+uint8_t static sbox(uint8_t box_num, uint8_t input){
     if(box_num == 1){
         return (sbox1[((input & BIT(5))?2:0)|( input & BIT(0))][(input >> 1) & 0xf]);                          
     }else if(box_num==2){
@@ -240,7 +240,7 @@ uint8_t sbox(uint8_t box_num, uint8_t input){
     return 0;
 }
 
-int sbox_m(uint8_t* m){
+int static sbox_m(uint8_t* m){
     uint8_t sbox_tmp[8];
     for(int i=0 ; i<8; ++i){
         uint8_t bit1 = (m[(i*6+0)/8] >> (7-(i*6+0)%8)) & 1U;
@@ -260,7 +260,7 @@ int sbox_m(uint8_t* m){
     return 0;
 }
 
-int pbox(uint8_t* m){
+int static pbox(uint8_t* m){
     uint8_t tmp[4];
     for (uint8_t i=0; i<4; i++){
         tmp[i] = m[i];
@@ -273,7 +273,7 @@ int pbox(uint8_t* m){
     return 0;
 }
 
-int des_core(uint8_t* cipher, const uint8_t* key, const uint8_t* pt, uint8_t mode){
+void static des_core(uint8_t* cipher, const uint8_t* key, const uint8_t* pt, uint8_t mode){
     //init
     uint8_t ptc[8]={0};
     uint8_t keyc[7]={0};
@@ -351,15 +351,12 @@ int des_core(uint8_t* cipher, const uint8_t* key, const uint8_t* pt, uint8_t mod
     D{ printf("before permute Cipher :\n"); printBits(8, cipher); }
     fp(cipher);
     D{ printf("after permute Cipher :\n"); printBits(8, cipher); }
-    return 0;
 }
 
-int des_encrypt(uint8_t* cipher, const uint8_t* key, const uint8_t* plaintext){
+void des_encrypt(uint8_t* cipher, const uint8_t* key, const uint8_t* plaintext){
     des_core(cipher, key, plaintext, 0);
-    return 0;
 }
 
-int des_decrypt(uint8_t* plaintext, const uint8_t* key, const uint8_t* cipher){
+void des_decrypt(uint8_t* plaintext, const uint8_t* key, const uint8_t* cipher){
     des_core(plaintext, key, cipher, 1);
-    return 0;
 }
