@@ -22,7 +22,7 @@ int static xor(uint8_t* x, const uint8_t* y, size_t len){
     return 1;
 }
 
-int ccm_aes_encrypt(uint8_t* cipher, const uint8_t* plaintext, const uint8_t* key, const uint8_t* nonce,
+void ccm_aes_encrypt(uint8_t* cipher, const uint8_t* plaintext, const uint8_t* key, const uint8_t* nonce,
                             const uint8_t* a, uint8_t nlen, size_t alen, size_t plen, uint8_t tlen){
     D{printf("plen=%zu\n", plen);}
     uint8_t b[16]={0};
@@ -154,7 +154,6 @@ int ccm_aes_encrypt(uint8_t* cipher, const uint8_t* plaintext, const uint8_t* ke
     }
     D{printf("C:\n");}
     D{print_arr(cipher,(plen + tlen));}
-    return 1;
 }
 
 int ccm_aes_decrypt(uint8_t* plaintext, const uint8_t* cipher, const uint8_t* key, const uint8_t* nonce,

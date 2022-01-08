@@ -46,6 +46,7 @@ int main(void){
     printf("cipher:\n");
     print_arr(actual_cipher1, 8);
     assert(is_equal(cipher1, actual_cipher1, 8));
+    printf("PASS CCM AES encrypt test 1\n");
 
     puts("");
     uint8_t* actual_pt1 = malloc(4 * sizeof(uint8_t*));
@@ -53,6 +54,7 @@ int main(void){
     printf("plaintext:\n");
     print_arr(actual_pt1, 4);
     assert(is_equal(p1, actual_pt1, 4));
+    printf("PASS CCM AES decrypt test 1\n");
 
     puts("");
     //20212223 24252627 28292a2b 2c2d2e2f
@@ -79,6 +81,7 @@ int main(void){
     printf("cipher:\n");
     print_arr(actual_cipher2, 22);
     assert(is_equal(cipher2, actual_cipher2, 22));
+    printf("PASS CCM AES encrypt test 2\n");
 
     puts("");
     uint8_t* actual_pt2 = malloc(16 * sizeof(uint8_t*));
@@ -86,6 +89,7 @@ int main(void){
     printf("plaintext:\n");
     print_arr(actual_pt2, 16);
     assert(is_equal(p2, actual_pt2, 16));
+    printf("PASS CCM AES decrypt test 2\n");
 
     puts("");
     uint8_t p3[24] = {0x20, 0x21, 0x22, 0x23,
@@ -116,6 +120,7 @@ int main(void){
     printf("cipher:\n");
     print_arr(actual_cipher3, 32);
     assert(is_equal(cipher3, actual_cipher3, 32));
+    printf("PASS CCM AES encrypt test 3\n");
 
 
     puts("");
@@ -124,4 +129,5 @@ int main(void){
     printf("plaintext:\n");
     print_arr(actual_pt3, 24);
     assert(is_equal(p3, actual_pt3, 24));
+    printf("PASS CCM AES decrypt test 3\n");
 }
