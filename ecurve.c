@@ -83,7 +83,7 @@ struct epoint_proj* epoint_proj_init(){
 }
 
 struct epoint_proj* epoint_convert_proj(const struct epoint* p){
-    struct epoint_proj* pj = malloc(sizeof(struct epoint_proj));
+    struct epoint_proj* pj = epoint_proj_init();
     copy(pj->x, p->x);
     copy(pj->y, p->y);
     for(uint8_t i =0; i< WORD_LENGTH; i++){
