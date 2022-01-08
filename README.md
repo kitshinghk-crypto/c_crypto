@@ -6,6 +6,7 @@ This repository contains a C implementation of crypto functions:
 * **Hash Function**: SHA256
 * **Block Cipher Modes of Operation**: ccm-aes128
 * **ECC**: NIST P-256 curve point multiplication
+* **ECDSA**: P-256 SHA256 signature generation/verification
 
 ## DES
 ### DES Encryption:
@@ -238,7 +239,7 @@ p256_scalar_mult(q, k, p);
 ```
 
 # ECDSA
-## ECDSA signature generation
+## P-256 SHA256 ECDSA signature generation
 ```C
 void ecdsa_p256_sha256_sign(uint8_t* r, uint8_t* s, const uint8_t* d, const uint8_t* k, const uint8_t* msg, size_t mlen);
 ```
@@ -268,7 +269,7 @@ uint8_t r[32]={0};
 ecdsa_p256_sha256_sign(r, s, d, k, msg, mlen);
 ```
 
-## ECDSA signature verification
+## P-256 SHA256 ECDSA signature verification
 ```C
 bool ecdsa_p256_sha256_verify(const uint8_t* r, const uint8_t* s, const uint8_t* qx, const uint8_t* qy,  const uint8_t* msg, size_t mlen);
 ```
