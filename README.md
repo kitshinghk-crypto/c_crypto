@@ -298,4 +298,6 @@ CCMAES - https://csrc.nist.gov/publications/detail/sp/800-38c/final
 
 ECC - Hankerson, D., Menezes, A.J. and Vanstone, S., 2006. Guide to elliptic curve cryptography. Springer Science & Business Media.
 
+ECDSA - https://csrc.nist.gov/csrc/media/publications/fips/186/3/archive/2009-06-25/documents/fips_186-3.pdf
+
 Arithmetric - Menezes, A.J., Van Oorschot, P.C. and Vanstone, S.A., 2018. Handbook of applied cryptography. CRC press.
