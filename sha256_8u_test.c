@@ -12,7 +12,7 @@ void print_arr(uint8_t* rk, unsigned int len){
 }
 
 void testsha256(uint8_t* m, size_t len){
-    SHA256_8U_DEBUG = false;
+    SHA256_8U_DEBUG = true;
     uint8_t hash[32]={0};
     sha256_8u_hash(hash, m, len);
     printf("SHA256 hash:\n");

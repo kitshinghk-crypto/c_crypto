@@ -36,7 +36,7 @@ void static print_arr(uint8_t* rk, unsigned int len){
     puts("");
 }
 
-int pad(uint8_t * m, size_t pm_len, size_t start_pad_ind){
+int static pad(uint8_t * m, size_t pm_len, size_t start_pad_ind){
     size_t start_byte = (start_pad_ind+1)/8;
     for(size_t i = start_byte; i<pm_len; ++i){
         if(i == start_byte){
@@ -50,20 +50,20 @@ int pad(uint8_t * m, size_t pm_len, size_t start_pad_ind){
     return 1;
 }
 
-int pad_m_len(uint8_t * m, size_t pm_len, size_t m_len){
+int static pad_m_len(uint8_t * m, size_t pm_len, size_t m_len){
     for(uint8_t i =0;i<8;i++){
         *(m+(pm_len-i-1)) = m_len>>(i*8) & 0xff;
     }
     return 1;
 }
 
-void copy(uint8_t* to, const uint8_t* from, size_t len){
+void static copy(uint8_t* to, const uint8_t* from, size_t len){
     for(size_t i =0; i< len; i++){
         to[i] = from[i];
     }
 }
 
-void rotr(uint8_t* x, size_t shift){
+void static rotr(uint8_t* x, size_t shift){
     uint8_t tmp[4] ={0};
     for(size_t i=0; i<32; i++){
         uint8_t ind = (i+shift) % (32);
@@ -73,35 +73,35 @@ void rotr(uint8_t* x, size_t shift){
     copy(x,tmp,4);
  }
 
- void x_or(uint8_t* x, const uint8_t* y, size_t len){
+ void static x_or(uint8_t* x, const uint8_t* y, size_t len){
      for(size_t i =0; i< len; i++){
          x[i] ^= y[i];
      }
  }
 
-void w_and(uint8_t* x, const uint8_t* y, size_t len){
+void static w_and(uint8_t* x, const uint8_t* y, size_t len){
      for(size_t i =0; i< len; i++){
          x[i] &= y[i];
      }
  }
 
- void w_neg(uint8_t* x, size_t len){
+ void static w_neg(uint8_t* x, size_t len){
      for(size_t i =0; i< len; i++){
          x[i] = ~x[i];
      }
  }
 
- void w_add(uint8_t* x,const uint8_t* y,size_t len){
+ void static w_add(uint8_t* x,const uint8_t* y,size_t len){
      uint8_t carry = 0;
-     uint16_t tmp = 0;
+     uint8_t tmp = 0;
      for(int i =len-1; i>=0; --i){
          tmp = x[i] + y[i] + carry;
-         carry = (tmp>>8) & 1u;
+         carry = (tmp < x[i]) || (tmp < y[i]) ;
          x[i] = tmp&0xff;
      }
  }
 
- void rshift(uint8_t* x, size_t shift){
+ void static rshift(uint8_t* x, size_t shift){
     uint8_t tmp[4] ={0};
     for(size_t i=0; i<32-shift; i++){
         uint8_t ind = i+shift;
@@ -111,7 +111,7 @@ void w_and(uint8_t* x, const uint8_t* y, size_t len){
     copy(x,tmp,4);
  }
 
-void func_s0(uint8_t* x){
+void static func_s0(uint8_t* x){
     //return rotr(x,7) ^ rotr(x,18) ^ (x>>3);
     uint8_t tmp1[4] ={0}; uint8_t tmp2[4] ={0};
     copy(tmp1,x,4); copy(tmp2,x,4);
@@ -119,7 +119,7 @@ void func_s0(uint8_t* x){
     x_or(x,tmp1,4); x_or(x,tmp2,4);
 }
 
-void func_s1(uint8_t* x){
+void static func_s1(uint8_t* x){
     //return rotr(x,17) ^ rotr(x,19) ^ (x>>10);
     uint8_t tmp1[4] ={0}; uint8_t tmp2[4] ={0};
     copy(tmp1,x,4); copy(tmp2,x,4);
@@ -127,7 +127,7 @@ void func_s1(uint8_t* x){
     x_or(x,tmp1,4); x_or(x,tmp2,4);
 }
 
-void func_e0(uint8_t* x){
+void static func_e0(uint8_t* x){
     //return rotr(x, 2)^rotr(x, 13)^rotr(x,22);
     uint8_t tmp1[4] ={0}; uint8_t tmp2[4] ={0};
     copy(tmp1,x,4); copy(tmp2,x,4);
@@ -136,7 +136,7 @@ void func_e0(uint8_t* x){
     x_or(x,tmp1,4); x_or(x,tmp2,4);
 }
 
-void func_e1(uint8_t* x){
+void static func_e1(uint8_t* x){
     //return rotr(x, 6)^rotr(x, 11)^rotr(x,25);   
     uint8_t tmp1[4] ={0}; uint8_t tmp2[4] ={0};
     copy(tmp1,x,4); copy(tmp2,x,4);
@@ -144,7 +144,7 @@ void func_e1(uint8_t* x){
     x_or(x,tmp1,4); x_or(x,tmp2,4);
 }
 
-void func_ch(uint8_t* x, const uint8_t* y, const uint8_t* z){
+void static func_ch(uint8_t* x, const uint8_t* y, const uint8_t* z){
     //return (((x) & (y)) ^ (~(x) & (z)));
     uint8_t tmp1[4] ={0};  copy(tmp1,x,4);
     w_and(x,y,4);
@@ -152,7 +152,7 @@ void func_ch(uint8_t* x, const uint8_t* y, const uint8_t* z){
     x_or(x,tmp1,4);
 }
 
-void func_maj(uint8_t* x, const uint8_t* y, const uint8_t* z){
+void static func_maj(uint8_t* x, const uint8_t* y, const uint8_t* z){
     //return (((x) & (y)) ^ ((x) & (z)) ^ ((y) & (z)));
     uint8_t tmp1[4] ={0};uint8_t tmp2[4] ={0};
     copy(tmp1,x,4);copy(tmp2,y,4);
@@ -160,7 +160,7 @@ void func_maj(uint8_t* x, const uint8_t* y, const uint8_t* z){
     x_or(x,tmp1,4);x_or(x,tmp2,4);
 }
 
-void init_w(uint8_t* w, const uint8_t* m){
+void static init_w(uint8_t* w, const uint8_t* m){
     uint8_t tmp1[4] ={0};
     uint8_t tmp2[4] ={0};
     uint8_t tmp3[4] ={0};
@@ -170,16 +170,16 @@ void init_w(uint8_t* w, const uint8_t* m){
     }
     for(size_t i=64;i<256;i=i+4){
         //w[i] = func_s1(w[i-2]) + w[i-7] + func_s0(w[i-15]) + w[i-16];
-        copy(tmp1, w+(i-(2*4)),4); func_s1(tmp1);
-        copy(tmp2, w+(i-(7*4)),4); 
-        copy(tmp3, w+(i-(15*4)),4); func_s0(tmp3);
-        copy(tmp4, w+(i-(16*4)),4);
-        copy(w+i, tmp1,4);
-        w_add(w+i, tmp2,4);w_add(w+i, tmp3,4);w_add(w+i, tmp4,4);
+        copy(tmp1, &w[i-(2*4)],4); func_s1(tmp1);
+        copy(tmp2, &w[i-(7*4)],4); 
+        copy(tmp3, &w[i-(15*4)],4); func_s0(tmp3);
+        copy(tmp4, &w[i-(16*4)],4);
+        copy(&w[i], tmp1,4);
+        w_add(&w[i], tmp2,4);w_add(&w[i], tmp3,4);w_add(&w[i], tmp4,4);
     }
 }
 
-void init_h(uint8_t* h){
+void static init_h(uint8_t* h){
     for(uint8_t i=0;i<8;i++){
         for(uint8_t j=0;j<4;j++){
             *(h+(4*i)+j) = ih[i][j];
