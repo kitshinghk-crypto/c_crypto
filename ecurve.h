@@ -25,6 +25,6 @@ extern void print_epoint_proj(const struct epoint_proj* );
 extern struct epoint_proj* epoint_convert_proj(const struct epoint* );
 extern int p256_point_double(struct epoint_proj* );
 extern int p256_point_add(struct epoint_proj* , const struct epoint* );
-extern int p256_scalar_mult(struct epoint*, const uint8_t*, const struct epoint*);
+extern int p256_scalar_mult(struct epoint*, const uint8_t*, const struct epoint*, uint8_t (*rand_byte_func)());
 extern struct epoint* p256_proj_to_affine(struct epoint_proj* );
 #endif

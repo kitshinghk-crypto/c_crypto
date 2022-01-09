@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #define D if(ECURVE_DEBUG)
+//#define USE_DOUBLE_AND_ADD
+#define USE_MONTGOMERY
 
 bool ECURVE_DEBUG = false;
 //p=0xff ff ff ff 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 ff ff ff ff ff ff ff ff ff ff ff ff
@@ -317,8 +319,12 @@ int p256_point_add(struct epoint_proj* p, const struct epoint* q){
     return 1;
 }
 
-struct epoint* p256_proj_to_affine(struct epoint_proj* p){
-    struct epoint* ap = epoint_init();
+void p256_proj_to_affine_p(struct epoint* ap, struct epoint_proj* p){
+    if(is_one(p->z)){
+        copy(ap->x, p->x);
+        copy(ap->y, p->y);
+        return;
+    }
     uint16_t t[WORD_LENGTH] = {0};
     uint16_t z2inv[WORD_LENGTH] = {0};
     uint16_t z3inv[WORD_LENGTH] = {0};
@@ -335,22 +341,83 @@ struct epoint* p256_proj_to_affine(struct epoint_proj* p){
     copy(ap->y, p->y);
     mod_mult(ap->x, z2inv, P256);
     mod_mult(ap->y, z3inv, P256);
+}
+
+struct epoint* p256_proj_to_affine(struct epoint_proj* p){
+    struct epoint* ap = epoint_init();
+    p256_proj_to_affine_p(ap,p);
     return ap;
 }
 
-
-int p256_scalar_mult(struct epoint* kp, const uint8_t* k, const struct epoint* p){
-    struct epoint_proj* q = epoint_proj_init();
-    set_epoint_inf(q);
-    for(int i=255;i>=0;i--){
-        uint8_t bit = (k[i/8] >> (i%8)) & 1U;
-        p256_point_double(q);
-        if(bit == 1){
-            p256_point_add(q,p);
-        }
+void randomize_proj(struct epoint_proj* p, uint8_t (*rand_byte_func)()){
+    if(rand_byte_func == 0){
+        return;
     }
-    struct epoint* ap  = p256_proj_to_affine(q);
-    copy(kp->x, ap->x);
-    copy(kp->y, ap->y);
-    return 1;
+    uint16_t rand[WORD_LENGTH] = {0};
+    for(size_t i=0; i<WORD_LENGTH; i++){
+        rand[i] = rand_byte_func() & 0xff;
+    }
+    uint16_t t[WORD_LENGTH] = {0};
+    printf("Before randomize_proj:\n");
+    print_epoint_proj(p);
+    mod_mult(p->z, rand, P256);
+    copy(t, p->z);
+    mod_mult(t,p->z,P256);
+    mod_mult(p->x, t, P256);
+    mod_mult(t,p->z,P256);
+    mod_mult(p->y, t, P256);
+    printf("After randomize_proj:\n");
+    print_epoint_proj(p);
+}
+
+int p256_scalar_mult(struct epoint* kp, const uint8_t* k, const struct epoint* p, uint8_t (*rand_byte_func)()){
+    #ifdef USE_DOUBLE_AND_ADD
+        struct epoint_proj* q = epoint_proj_init();
+        set_epoint_inf(q);
+        for(int i=255;i>=0;i--){
+            uint8_t bit = (k[i/8] >> (i%8)) & 1U;
+            p256_point_double(q);
+            if(bit == 1){
+                p256_point_add(q,p);
+            }
+        }
+        struct epoint* ap  = p256_proj_to_affine(q);
+        copy(kp->x, ap->x);
+        copy(kp->y, ap->y);
+        free(q); free(ap); q=0; ap=0;
+        return 1;
+    #endif
+
+    #ifdef USE_MONTGOMERY
+        struct epoint_proj* r0 = epoint_proj_init();
+        set_epoint_inf(r0);
+        struct epoint_proj* r1= epoint_convert_proj(p);
+        randomize_proj(r1, rand_byte_func);
+        struct epoint* tmp = epoint_init();
+        int start_ind = 255;
+        for(start_ind = 255; start_ind >=0; start_ind--){
+            uint8_t bit = (k[start_ind/8] >> (start_ind%8)) & 1U;
+            D{printf("i=%d, bit=%u\n", start_ind, bit);}
+            if(bit){
+                break;
+            }
+        }
+        for(int i=start_ind;i>=0;i--){
+            uint8_t bit = (k[i/8] >> (i%8)) & 1U;
+            if(bit == 0){
+                p256_proj_to_affine_p(tmp, r0);
+                p256_point_add(r1,tmp);
+                p256_point_double(r0);
+            }else{
+                p256_proj_to_affine_p(tmp, r1);
+                p256_point_add(r0,tmp);
+                p256_point_double(r1);
+            }
+        }
+        struct epoint* ap  = p256_proj_to_affine(r0);
+        copy(kp->x, ap->x);
+        copy(kp->y, ap->y);
+        free(r0); free(r1); free(ap); free(tmp); r0=0; r1=0; ap=0; tmp=0;
+        return 1;
+    #endif
 }

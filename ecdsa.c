@@ -66,7 +66,7 @@ void ecdsa_p256_sha256_sign(uint8_t* r, uint8_t* s, const uint8_t* d, const uint
         h_16[32-i-1] = hash[i];
     }
     D{printf("msg hash:\n");print_arr16(h_16,32);}
-    p256_scalar_mult(q, k, p);
+    p256_scalar_mult(q, k, p, 0);
     D{printf("kp:");print_epoint(q);}
     inv_p(k_inv, k_16, P256_ORDER);
     D{printf("k inv:");print_arr16(k_inv,32);}
@@ -125,9 +125,9 @@ int ecdsa_p256_sha256_verify(const uint8_t* r, const uint8_t* s, const uint8_t* 
         u1_8[i] = u1[i] & 0xff;
         u2_8[i] = u2[i] & 0xff;
     }
-    p256_scalar_mult(q1,u1_8,p1);
+    p256_scalar_mult(q1,u1_8,p1,0);
     D{printf("Epoint q1:\n");print_epoint(q1);}
-    p256_scalar_mult(q2,u2_8,p2);
+    p256_scalar_mult(q2,u2_8,p2,0);
     D{printf("Epoint q2:\n");print_epoint(q2);}
     struct epoint_proj* q3 = epoint_convert_proj(q1);
     D{printf("Epoint q3:\n");print_epoint_proj(q3);}
