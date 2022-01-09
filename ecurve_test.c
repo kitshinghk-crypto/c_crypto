@@ -1,6 +1,7 @@
 #include "arithmetic.h"
 #include "ecurve.h"
 #include <stdlib.h>
+#include <time.h>
 #include <stdio.h>
 #include <assert.h>
 
@@ -140,6 +141,10 @@ int is_equal_epoint(struct epoint* p, uint8_t* x, uint8_t* y){
     return 1;
 }
 
+uint8_t test_rand_byte(){
+    return rand() & 0xff;
+}
+
 void p256_double_test(){
     ARITH_DEBUG = false;
     ECURVE_DEBUG = false;
@@ -179,44 +184,45 @@ void p256_scalar_mult_test(){
     printf("P256 Point multiplication test:\n");
     struct epoint* q = epoint_init();
     struct epoint* p = p256_g();
-    p256_scalar_mult(q, k, p);
+    p256_scalar_mult(q, k, p, 0);
     print_epoint(q);
-    p256_scalar_mult(q, k2, p);
+
+    p256_scalar_mult(q, k2, p, &test_rand_byte);
     print_epoint(q);
     assert(is_equal_epoint(q, qx2, qy2));
     printf("PASS P256 sclar multi test 1\n");
 
-    p256_scalar_mult(q, k3, p);
+    p256_scalar_mult(q, k3, p, &test_rand_byte);
     print_epoint(q);
     assert(is_equal_epoint(q, qx3, qy3));
     printf("PASS P256 sclar multi test 2\n");
 
-    p256_scalar_mult(q, k4, p);
+    p256_scalar_mult(q, k4, p, &test_rand_byte);
     print_epoint(q);
     assert(is_equal_epoint(q, qx4, qy4));
     printf("PASS P256 sclar multi test 3\n");
 
-    p256_scalar_mult(q, k5, p);
+    p256_scalar_mult(q, k5, p, &test_rand_byte);
     print_epoint(q);
     assert(is_equal_epoint(q, qx5, qy5));
     printf("PASS P256 sclar multi test 4\n");
 
-    p256_scalar_mult(q, k6, p);
+    p256_scalar_mult(q, k6, p, &test_rand_byte);
     print_epoint(q);
     assert(is_equal_epoint(q, qx6, qy6));
     printf("PASS P256 sclar multi test 5\n");
 
-    p256_scalar_mult(q, k7, p);
+    p256_scalar_mult(q, k7, p, &test_rand_byte);
     print_epoint(q);
     assert(is_equal_epoint(q, qx7, qy7));
     printf("PASS P256 sclar multi test 6\n");
 
-    p256_scalar_mult(q, k8, p);
+    p256_scalar_mult(q, k8, p, &test_rand_byte);
     print_epoint(q);
     assert(is_equal_epoint(q, qx8, qy8));
     printf("PASS P256 sclar multi test 7\n");
 
-    p256_scalar_mult(q, k9, p);
+    p256_scalar_mult(q, k9, p, &test_rand_byte);
     print_epoint(q);
     assert(is_equal_epoint(q, qx9, qy9));
     printf("PASS P256 sclar multi test 8\n");
