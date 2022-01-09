@@ -203,7 +203,7 @@ ccm_aes_decrypt(p, cipher, key, n, a, 7, 8, 8, 4);
 ## ECC
 ### NIST P-256 curve point multiplication
 ```C
-void p256_scalar_mult(struct epoint* kp, const uint8_t* k, const struct epoint* p)
+void p256_scalar_mult(struct epoint* kp, const uint8_t* k, const struct epoint* p, uint8_t (*rand_byte_func)())
 ```
 **Parameters:**
 
@@ -213,8 +213,14 @@ void p256_scalar_mult(struct epoint* kp, const uint8_t* k, const struct epoint* 
 
 *p* - a pointer to a elliptic point
 
+*rand_byte_func* - a function pointer to a function which return a random byte. The function is used for randomize projective. Set as 0 to disable.
+
 **Example:**
 ```C
+uint8_t rand_byte(){
+    return rand() & 0xff;
+}
+
 uint16_t k[32] = {0x58, 0x2d, 0xb4, 0xba, 0xae, 0x98, 0xf5, 0xba,
                     0xdb, 0x2c, 0xbd, 0x6c, 0xeb, 0x57, 0xb7, 0x04,
                     0x97, 0xdf, 0x67, 0xc5, 0xef, 0x28, 0x6c, 0xcd,
@@ -222,7 +228,7 @@ uint16_t k[32] = {0x58, 0x2d, 0xb4, 0xba, 0xae, 0x98, 0xf5, 0xba,
                     
 struct epoint* q = epoint_init();
 struct epoint* p = p256_g();
-p256_scalar_mult(q, k, p);
+p256_scalar_mult(q, k, p, &rand_byte);
 ```
 
 # ECDSA
