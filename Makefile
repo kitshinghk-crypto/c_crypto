@@ -1,3 +1,6 @@
+ecdh_test: arithmetic.o ecurve.o ecdh.o ecdh_test.c
+	gcc -g -o $@ $^
+
 ecdsa_test: sha256_8u.o arithmetic.o ecurve.o ecdsa.o ecdsa_test.c
 	gcc -g -o $@ $^
 
@@ -44,4 +47,7 @@ ecurve.o: ecurve.c
 	gcc -c -g $^
 
 ecdsa.o: ecdsa.c
+	gcc -c -g $^
+
+ecdh.o: ecdh.c
 	gcc -c -g $^
