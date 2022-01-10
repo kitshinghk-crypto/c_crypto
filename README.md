@@ -1,6 +1,4 @@
 # c_crypto
-C Crypto library 
-
 This repository contains a C implementation of crypto functions:
 
 * **Sysmetric-key Encryption/Decryption**: DES, AES128
