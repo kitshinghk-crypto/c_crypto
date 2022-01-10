@@ -8,6 +8,7 @@ This repository contains a C implementation of crypto functions:
 * **Block Cipher Modes of Operation**: ccm-aes128
 * **ECC**: NIST P-256 curve point multiplication
 * **ECDSA**: P-256 SHA256 signature generation/verification
+* **ECDH**: P-256 elliptic curve Diffie-Hellman
 
 ## DES
 ### DES Encryption:
