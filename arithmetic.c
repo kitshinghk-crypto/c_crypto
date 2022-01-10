@@ -91,6 +91,15 @@ int is_one(const uint16_t *a){
     return (a[0]&0xff)==1 ;
 }
 
+int is_equal(const uint16_t *x,const uint16_t *y){
+    for(uint8_t i = 1; i<WORD_LENGTH; i++){
+        if(x[i]!=y[i]){
+            return 0;
+        }
+    }
+    return 1;
+}
+
 void set_zero(uint16_t* a){
     for(uint8_t i = 0; i<WORD_LENGTH; i++){
         a[i] = 0;
