@@ -262,7 +262,7 @@ int p256_point_add(struct epoint_proj* p, const struct epoint* q){
             p->z[0] =1;
             p256_point_double(p);
         }else{
-             D{printf("Q=-P, return infinity\n");}
+            D{printf("Q=-P, return infinity\n");}
             for(int i =0; i< WORD_LENGTH;i++){
                 p->x[i] = 0;p->y[i] = 0;p->z[i] = 0;
             }
@@ -319,6 +319,70 @@ int p256_point_add(struct epoint_proj* p, const struct epoint* q){
     return 1;
 }
 
+/** p = (x1,y1,z1), q = (x2,y2,z2)
+**/
+int p256_point_add_proj(struct epoint_proj* p, const struct epoint_proj* q){
+    D{printf("Point Addition Proj:\n");print_epoint_proj(p);}
+    if(is_epoint_inf(p)){
+        D{printf("Point P at inf:\n");}
+        copy(p->x, q->x);
+        copy(p->y, q->y);
+        copy(p->z, q->z);
+        return 1;
+    }
+    if(is_epoint_inf(q)){
+        D{printf("Point P at inf:\n");}
+        return 1;
+    }
+    uint16_t u1[WORD_LENGTH] = {0}; 
+    uint16_t u2[WORD_LENGTH] = {0}; 
+    uint16_t s1[WORD_LENGTH] = {0}; 
+    uint16_t s2[WORD_LENGTH] = {0}; 
+    uint16_t h[WORD_LENGTH] = {0}; 
+    uint16_t h2[WORD_LENGTH] = {0}; 
+    uint16_t h3[WORD_LENGTH] = {0}; 
+    uint16_t r[WORD_LENGTH] = {0}; 
+    uint16_t x3[WORD_LENGTH] = {0}; 
+    uint16_t y3[WORD_LENGTH] = {0}; 
+    uint16_t z3[WORD_LENGTH] = {0};
+    uint16_t tmp[WORD_LENGTH] = {0};
+    for(int i=0; i< WORD_LENGTH; i++){
+        u1[i]=0;u2[i]=0;s1[i]=0;s2[i]=0;h[i]=0;h2[i]=0;h3[i]=0;r[i]=0;x3[i]=0;y3[i]=0;z3[i]=0;tmp[i]=0;
+    }
+    copy(u1,p->x);mod_mult(u1,q->z,P256);mod_mult(u1,q->z,P256);//U1 = X1*Z2^2
+    copy(u2,q->x);mod_mult(u2,p->z,P256);mod_mult(u2,p->z,P256);//U2 = X2*Z1^2
+    copy(s1,p->y);mod_mult(s1,q->z,P256);mod_mult(s1,q->z,P256);mod_mult(s1,q->z,P256);//S1 = Y1*Z2^3
+    copy(s2,q->y);mod_mult(s2,p->z,P256);mod_mult(s2,p->z,P256);mod_mult(s2,p->z,P256);//S2 = Y2*Z1^3
+    if(is_equal(u1,u2)){
+        if(!is_equal(s1,s2)){
+            D{printf("Q=-P, return infinity\n");}
+            for(int i =0; i< WORD_LENGTH;i++){
+                p->x[i] = 0;p->y[i] = 0;p->z[i] = 0;
+            }
+            p->x[0] =1;p->y[0] = 1;
+        }else{
+            p256_point_double(p);
+        }
+    }
+    copy(h,u2);mod_sub(h,u1,P256);// H = U2 - U1
+    copy(r,s2);mod_sub(r,s1,P256);// R = S2 - S1
+    copy(h2,h);mod_mult(h2,h,P256);
+    copy(h3,h2);mod_mult(h3,h,P256);
+    copy(tmp,r);mod_mult(tmp,r,P256);
+    copy(x3, tmp);//x3 = r^2
+    mod_sub(x3,h3,P256);//x3=r^2 - h^3
+    copy(tmp,u1);mod_add(tmp,u1,P256);mod_mult(tmp,h2,P256);
+    mod_sub(x3,tmp,P256);//x3= R^2 - H^3 - 2*U1*H^2
+    copy(tmp,u1);mod_mult(tmp,h2,P256);
+    mod_sub(tmp,x3,P256);//tmp=U1*H^2 - X3
+    copy(y3, r);mod_mult(y3,tmp,P256);//y3=r*(U1*H^2 - X3)
+    copy(tmp,s1);mod_mult(tmp,h3,P256);
+    mod_sub(y3, tmp, P256);//y3=r*(U1*H^2 - X3) - S1*H^3
+    copy(z3,h);mod_mult(z3,p->z,P256);mod_mult(z3,q->z,P256);
+    copy(p->x, x3);copy(p->y, y3);copy(p->z, z3);
+    return 1;
+}
+
 void p256_proj_to_affine_p(struct epoint* ap, struct epoint_proj* p){
     if(is_one(p->z)){
         copy(ap->x, p->x);
@@ -358,16 +422,28 @@ void randomize_proj(struct epoint_proj* p, uint8_t (*rand_byte_func)()){
         rand[i] = rand_byte_func() & 0xff;
     }
     uint16_t t[WORD_LENGTH] = {0};
-    printf("Before randomize_proj:\n");
-    print_epoint_proj(p);
     mod_mult(p->z, rand, P256);
     copy(t, p->z);
     mod_mult(t,p->z,P256);
     mod_mult(p->x, t, P256);
     mod_mult(t,p->z,P256);
     mod_mult(p->y, t, P256);
-    printf("After randomize_proj:\n");
-    print_epoint_proj(p);
+}
+
+void swap_epoint_proj(struct epoint_proj* p,struct epoint_proj* q, uint8_t b){
+    uint8_t mask = ~(b-1);
+    uint8_t t = 0;
+    for(int i=0;i<WORD_LENGTH;i++){
+        t = mask & (p->x[i] ^ q->x[i]);
+        p->x[i] ^= t;
+        q->x[i] ^= t;
+        t = mask & (p->y[i] ^ q->y[i]);
+        p->y[i] ^= t;
+        q->y[i] ^= t;
+        t = mask & (p->z[i] ^ q->z[i]);
+        p->z[i] ^= t;
+        q->z[i] ^= t;
+    }
 }
 
 int p256_scalar_mult(struct epoint* kp, const uint8_t* k, const struct epoint* p, uint8_t (*rand_byte_func)()){
@@ -397,22 +473,16 @@ int p256_scalar_mult(struct epoint* kp, const uint8_t* k, const struct epoint* p
         int start_ind = 255;
         for(start_ind = 255; start_ind >=0; start_ind--){
             uint8_t bit = (k[start_ind/8] >> (start_ind%8)) & 1U;
-            D{printf("i=%d, bit=%u\n", start_ind, bit);}
             if(bit){
                 break;
             }
         }
         for(int i=start_ind;i>=0;i--){
             uint8_t bit = (k[i/8] >> (i%8)) & 1U;
-            if(bit == 0){
-                p256_proj_to_affine_p(tmp, r0);
-                p256_point_add(r1,tmp);
-                p256_point_double(r0);
-            }else{
-                p256_proj_to_affine_p(tmp, r1);
-                p256_point_add(r0,tmp);
-                p256_point_double(r1);
-            }
+            swap_epoint_proj(r0,r1,bit);
+            p256_point_add_proj(r1,r0);
+            p256_point_double(r0);
+            swap_epoint_proj(r0,r1,bit);
         }
         struct epoint* ap  = p256_proj_to_affine(r0);
         copy(kp->x, ap->x);

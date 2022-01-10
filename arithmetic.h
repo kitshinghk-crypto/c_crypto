@@ -31,4 +31,5 @@ extern void print_bin(const uint16_t *, uint8_t);
 extern void print_dec(const uint16_t *, uint8_t);
 extern int is_zero(const uint16_t *);
 extern int is_one(const uint16_t *);
+extern int is_equal(const uint16_t *,const uint16_t *);
 #endif

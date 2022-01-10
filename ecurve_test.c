@@ -161,7 +161,7 @@ void p256_double_test(){
 
 void p256_add_test(){
     ARITH_DEBUG = false;
-    ECURVE_DEBUG = false;
+    ECURVE_DEBUG = true;
     printf("P256 Point Addition test:\n");
     struct epoint_proj* p = epoint_proj_init();
     struct epoint* q = epoint_init();
@@ -178,14 +178,33 @@ void p256_add_test(){
     print_epoint(ap);
 }
 
+void p256_add_proj_test(){
+    ARITH_DEBUG = false;
+    ECURVE_DEBUG = true;
+    printf("P256 Point Addition test:\n");
+    struct epoint_proj* p = epoint_proj_init();
+    struct epoint_proj* q = epoint_proj_init();
+    for (int i=0; i<WORD_LENGTH; i++){
+        p->x[i] = p2x[i];
+        p->y[i] = p2y[i];
+        q->x[i] = px[i];
+        q->y[i] = py[i];
+    }
+    p->z[0] = 1;q->z[0]=1;
+    p256_point_add_proj(p,q);
+    print_epoint_proj(p);
+    struct epoint* ap = p256_proj_to_affine(p);
+    print_epoint(ap);
+}
+
 void p256_scalar_mult_test(){
     ARITH_DEBUG = false;
     ECURVE_DEBUG = false;
     printf("P256 Point multiplication test:\n");
     struct epoint* q = epoint_init();
     struct epoint* p = p256_g();
-    p256_scalar_mult(q, k, p, 0);
-    print_epoint(q);
+    //p256_scalar_mult(q, k, p, 0);
+    //print_epoint(q);
 
     p256_scalar_mult(q, k2, p, &test_rand_byte);
     print_epoint(q);
@@ -226,6 +245,7 @@ void p256_scalar_mult_test(){
     print_epoint(q);
     assert(is_equal_epoint(q, qx9, qy9));
     printf("PASS P256 sclar multi test 8\n");
+    
 }
 /*
 void P256_inv_test(){
@@ -250,6 +270,7 @@ void P256_inv_test(){
 int main(){
     //p256_double_test();
     //p256_add_test();
+    //p256_add_proj_test();
     //P256_inv_test();
     p256_scalar_mult_test();
 }
