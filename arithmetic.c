@@ -576,6 +576,14 @@ void inv_p(uint16_t* inv, const uint16_t* a, const uint16_t* p){
     
 }
 
+/**
+**  Ref: Handbook of Applied Cryptography 
+**  Author: Alfred J. Menezes, Paul C. van Oorschot and Scott A. Vanstone
+**  Page: 602, Alg. 14.32 Montgomery multiplication 
+**  input: x ,y, m, m_pi, n
+**  output: xyR^−1 mod m.
+**  return: x=xyR^−1 mod m.
+**/
 void mont_mult(uint16_t* x, const uint16_t* y, const uint16_t* m, uint16_t m_pi, size_t n){
     D{printf("x:"); print_hex(x,WORD_LENGTH); printf("y:"); print_hex(y,WORD_LENGTH); printf("m:"); print_hex(m,WORD_LENGTH);printf("m_pi:%02x\n",m_pi);}
     uint16_t* a = malloc(sizeof(uint16_t)*(n+1));
@@ -639,7 +647,14 @@ void swap_num(uint16_t* x,uint16_t* y, uint8_t b){
     }
 }
 
-
+/**
+**  Ref: Guide to elliptic curve cryptography 
+**  Author: Hankerson, D., Menezes, A.J. and Vanstone, S.
+**  Page: 38, Algorithm 2.17 Montgomery exponentiation
+**  input: x,e,p, klen, rlen 
+**  output: x^e mod p
+**  return: x=x^e mod p
+**/
 void mont_exp(uint16_t* x,const uint16_t* e,const uint16_t* p,size_t klen, size_t rlen){
     D{printf("msg:\n"); print_hex(x, WORD_LENGTH); printf("d:\n"); print_hex(e, WORD_LENGTH); printf("n:\n"); print_hex(p, WORD_LENGTH);}
     uint16_t one[WORD_LENGTH] = {0}; one[0]=1;
