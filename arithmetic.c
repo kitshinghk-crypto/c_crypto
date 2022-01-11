@@ -655,8 +655,8 @@ void mont_exp(uint16_t* x,const uint16_t* e,const uint16_t* p,size_t klen, size_
         r16[i] = 0;
     }
     r16[rlen] =1;
-    int start_ind = klen;
-    for(start_ind=klen; start_ind>=0 ;start_ind--){
+    int start_ind = klen-1;
+    for(start_ind=klen-1; start_ind>=0 ;start_ind--){
         uint8_t bit = (e[start_ind/8] >> (start_ind%8)) & 1U;
         if(bit){
             break;
