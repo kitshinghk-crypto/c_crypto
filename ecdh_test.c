@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-int is_equal(uint8_t* k, uint8_t* expected_k){
+int static is_equal(uint8_t* k, uint8_t* expected_k){
     for(int i =0; i< 32; i++){
         if(k[i]!=expected_k[i]){
             return 0;

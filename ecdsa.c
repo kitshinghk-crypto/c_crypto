@@ -1,3 +1,4 @@
+#define WORD_LENGTH 32
 #include "ecdsa.h"
 #include "ecurve.h"
 #include "sha256_8u.h"
@@ -22,6 +23,7 @@ void static print_arr(const uint8_t* rk, unsigned int len){
     puts("");
 }
 
+/*
 int static is_equal(const uint16_t* x,const uint16_t* y){
     for(int i =0; i<32; i++){
         if(x[i]!=y[i]){
@@ -29,7 +31,7 @@ int static is_equal(const uint16_t* x,const uint16_t* y){
         }
     }
     return 1;
-}
+}*/
 
 void static print_arr16(const uint16_t* rk, unsigned int len){
     for(int i =len-1; i>=0; i--){
