@@ -7,6 +7,11 @@ This repository contains a C implementation of crypto functions:
 * **ECC**: NIST P-256 curve point multiplication
 * **ECDSA**: P-256 SHA256 signature generation/verification
 * **ECDH**: P-256 elliptic curve Diffie-Hellman
+* **RSA**: PKCS#1v1.5 Signature Generation
+
+## Features 
+* **ECC scalar multiplicatoin** - Use randomized projective coordinate to protect from DPA and Montgomery ladder to protect from SPA
+* **RSA ** - Use Montgomery ladder for exponentiation to protect from SPA
 
 ## DES
 ### DES Encryption:
