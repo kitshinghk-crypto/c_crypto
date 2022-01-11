@@ -54,7 +54,11 @@ int compare_len(const uint16_t *a, const uint16_t*b, uint8_t len){
 }
 
 void copy(uint16_t* a, const uint16_t* b){
-    for(int i = WORD_LENGTH-1; i>=0; --i){
+    copy_len(a,b,WORD_LENGTH);
+}
+
+void copy_len(uint16_t* a, const uint16_t* b, size_t len){
+    for(int i = len-1; i>=0; --i){
         a[i] = b[i];
     }
 }
@@ -302,12 +306,12 @@ void inverse(uint16_t *inv, const uint16_t* x, const uint16_t* y){
         half(xc); half(yc);times_two(g);
         D{printf("After step 2\n"); printf("x: \n");print_bin(x,WORD_LENGTH);printf("y: \n");print_bin(y,WORD_LENGTH);printf("g: \n");print_bin(g,WORD_LENGTH);};
     }
-    uint16_t u[32]= {0};
-    uint16_t v[32]= {0};
-    uint16_t a[32]= {0}; uint8_t a_neg = 0;
-    uint16_t b[32]= {0}; uint8_t b_neg = 0;
-    uint16_t c[32]= {0}; uint8_t c_neg = 0;
-    uint16_t d[32]= {0}; uint8_t d_neg = 0;
+    uint16_t u[WORD_LENGTH]= {0};
+    uint16_t v[WORD_LENGTH]= {0};
+    uint16_t a[WORD_LENGTH]= {0}; uint8_t a_neg = 0;
+    uint16_t b[WORD_LENGTH]= {0}; uint8_t b_neg = 0;
+    uint16_t c[WORD_LENGTH]= {0}; uint8_t c_neg = 0;
+    uint16_t d[WORD_LENGTH]= {0}; uint8_t d_neg = 0;
     uint8_t zero = 0;
     for(uint8_t i =0; i<WORD_LENGTH; ++i){
         u[i]=x[i]; v[i]=y[i]; 
@@ -562,3 +566,104 @@ void inv_p(uint16_t* inv, const uint16_t* a, const uint16_t* p){
     }
     
 }
+
+void mont_mult(uint16_t* x, uint16_t* y,uint16_t* m,uint16_t m_pi, size_t n){
+    D{printf("x:"); print_hex(x,WORD_LENGTH); printf("y:"); print_hex(y,WORD_LENGTH); printf("m:"); print_hex(m,WORD_LENGTH);printf("m_pi:%02x\n",m_pi);}
+    uint16_t* a = malloc(sizeof(uint16_t)*(n+1));
+    for(size_t i=0; i<n+1; i++){
+        a[i] = 0;
+    }
+    uint16_t u = 0;
+    uint16_t tmp1[WORD_LENGTH*2] = {0};
+    uint16_t tmp2[WORD_LENGTH] = {0};
+    uint8_t carry = 0;
+    for(int i =0;i<n;i++){
+        u = (x[i] * y[0]) &0xff;
+        u = (u + a[0]) & 0xff;
+        u = (u * m_pi) & 0xff;
+        D{printf("i=%d, u=%02x\n",i,u);}
+        for(size_t i=0; i<WORD_LENGTH*2; i++){
+            tmp1[i] =0; 
+            if(i<WORD_LENGTH){
+                tmp2[i]=0;
+            }
+        }
+        tmp2[0] = x[i];
+        mult(tmp1,tmp2,y);
+        D{printf("x[%d] * y:\n",i); print_hex(tmp1, WORD_LENGTH*2);}
+        add_len(a, tmp1, &carry, n+1);
+        D{printf("carry=%u\n",carry);}
+        for(size_t i=0; i<WORD_LENGTH*2; i++){
+            tmp1[i] =0; 
+            if(i<WORD_LENGTH){
+                tmp2[i]=0;
+            }
+        }
+        tmp2[0] = u;
+        mult(tmp1,tmp2,m);
+        D{printf("u[%d] * m:\n",i); print_hex(tmp1, WORD_LENGTH*2);}
+        add_len(a, tmp1, &carry, n+1);
+        D{printf("carry=%u\n",carry) ;}
+        D{printf("a:\n"); print_hex(a, n+1);}
+        for(int i=0;i<n+1;i++){
+            a[i]=a[i+1];
+        }
+        a[n]=carry;
+        carry=0;
+        D{printf("a/2:\n"); print_hex(a, n+1);}
+    }
+    if(a[n]==1 || compare(a,m)>=0){
+        sub(a, m, &carry);
+        copy_len(x,a,WORD_LENGTH);
+    }else{
+        copy_len(x,a,WORD_LENGTH);
+    }
+}
+
+
+void mont_exp(uint8_t* x,const uint8_t* e,const uint8_t* p,size_t rlen){
+    uint16_t x_mont[WORD_LENGTH] = {0};
+    uint16_t* r = malloc(sizeof(uint16_t) * (rlen+1)); r[rlen]=1;
+    uint16_t a[WORD_LENGTH] = {0};
+    uint16_t a_copy[WORD_LENGTH] = {0};
+    uint16_t one[WORD_LENGTH] = {0}; one[0]=1;
+    uint16_t p16[WORD_LENGTH] = {0};
+    uint16_t * r16 = malloc(sizeof(uint16_t)*(rlen+1));
+    uint16_t m_pi =0;
+    for(m_pi=0; m_pi<256; m_pi++){
+        if((m_pi*(p[0]&0xff))%256 == 1){
+            break;
+        }
+    }
+    m_pi = 256 - m_pi;
+    for(size_t i=0;i<WORD_LENGTH;i++){
+        x_mont[i] = x[i]; p16[i] = p[i];
+    }
+    for(size_t i=0; i<rlen+1; i++){
+        r16[i] = r[i];
+    }
+    reduce(r16, rlen+1, p16);
+    mod_mult(x_mont, r16, p16);
+    copy(a, r16);
+    int start_ind = 255;
+    for(start_ind=255; start_ind>=0 ;start_ind--){
+        uint8_t bit = (e[start_ind/8] >> (start_ind%8)) & 1U;
+        if(bit){
+            break;
+        }
+    }
+    for(int i=start_ind;i>=0;i--){
+        uint8_t bit = (e[i/8] >> (i%8)) & 1U;
+        copy(a_copy, a);
+            ARITH_DEBUG =true;
+        mont_mult(a,a_copy,p16,m_pi,WORD_LENGTH);
+            ARITH_DEBUG =false;
+        if(bit == 1){
+            mont_mult(a,x_mont,p16,m_pi,WORD_LENGTH);
+        }
+    }
+    mont_mult(a,one,p16,m_pi,WORD_LENGTH);
+    for(int i=0; i<WORD_LENGTH; i++){
+        x[i] = a[i] & 0xff;
+    }
+} 
