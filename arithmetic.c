@@ -14,21 +14,28 @@ bool ARITH_DEBUG = false;
 **/  
 //uint8_t WORD_LENGTH = 32;
 
-void print_dec(const uint16_t* b, uint8_t len){
+void print_dec(const uint16_t* b, size_t len){
     for(int i = len-1; i>=0; --i){
         printf("%d ", b[i]&0x00ff);
     }
     puts("");
 }
 
-void print_hex(const uint16_t* b, uint8_t len){
+void static print_hex_8(const uint8_t* b, size_t len){
+    for(int i = len-1; i>=0; --i){
+        printf("%02x", b[i]);
+    }
+    puts("");
+}
+
+void print_hex(const uint16_t* b, size_t len){
     for(int i = len-1; i>=0; --i){
         printf("%02x", b[i]&0x00ff);
     }
     puts("");
 }
 
-void print_bin(const uint16_t* ptr, uint8_t size){
+void print_bin(const uint16_t* ptr, size_t size){
     unsigned char byte;
     int i, j;
     
@@ -42,8 +49,8 @@ void print_bin(const uint16_t* ptr, uint8_t size){
     puts("");
 }
 
-int compare_len(const uint16_t *a, const uint16_t*b, uint8_t len){
-    for(uint8_t i = len-1; i>=0; i--){
+int compare_len(const uint16_t *a, const uint16_t*b, size_t len){
+    for(int i = len-1; i>=0; i--){
         if(a[i]>b[i]){
             return 1;
         }else if(a[i]<b[i]){
@@ -78,7 +85,7 @@ int compare(const uint16_t *a, const uint16_t*b){
 }
 
 int is_zero(const uint16_t *a){
-    for(uint8_t i = 0; i<WORD_LENGTH; i++){
+    for(int i = 0; i<WORD_LENGTH; i++){
         if((a[i]&0xff) > 0){
             return 0;
         }
@@ -87,7 +94,7 @@ int is_zero(const uint16_t *a){
 }
 
 int is_one(const uint16_t *a){
-    for(uint8_t i = 1; i<WORD_LENGTH; i++){
+    for(int i = 1; i<WORD_LENGTH; i++){
         if((a[i]&0xff) > 0){
             return 0;
         }
@@ -96,7 +103,7 @@ int is_one(const uint16_t *a){
 }
 
 int is_equal(const uint16_t *x,const uint16_t *y){
-    for(uint8_t i = 1; i<WORD_LENGTH; i++){
+    for(int i = 1; i<WORD_LENGTH; i++){
         if(x[i]!=y[i]){
             return 0;
         }
@@ -105,12 +112,12 @@ int is_equal(const uint16_t *x,const uint16_t *y){
 }
 
 void set_zero(uint16_t* a){
-    for(uint8_t i = 0; i<WORD_LENGTH; i++){
+    for(int i = 0; i<WORD_LENGTH; i++){
         a[i] = 0;
     }
 }
 
-void half_len(uint16_t*a, uint8_t len){
+void half_len(uint16_t*a, size_t len){
     for(size_t i = 0; i<len*8; ++i){
         uint8_t bit = (a[(i+1)/8] >> (i+1)%8) & 1U;
         a[i/8] = (a[i/8] & ~(1U<<(i%8))) | (bit << (i%8));
@@ -122,7 +129,7 @@ void half(uint16_t*a){
     half_len(a, WORD_LENGTH);
 }
 
-void times_two_len(uint16_t* a, uint8_t len){
+void times_two_len(uint16_t* a, size_t len){
     for(size_t i =len*8-1; i>=1; --i){
         uint8_t bit = (a[(i-1)/8] >> (i-1)%8) & 1U;
         a[i/8] = (a[i/8] & ~(1U<<(i%8))) | (bit << (i%8));
@@ -140,7 +147,7 @@ void add(uint16_t* a, const uint16_t* b, uint8_t* carry){
     a[0] = a[0] + b[0];
     c = (a[0]>>8) & 0x0001;
     a[0] = a[0] & 0x00ff;
-    for (uint8_t i=1; i < WORD_LENGTH; ++i){
+    for (size_t i=1; i < WORD_LENGTH; ++i){
         a[i] = a[i] + b[i] + c;
         c = (a[i]>>8) & 0x00ff;
         a[i] = a[i] & 0x00ff;
@@ -148,12 +155,12 @@ void add(uint16_t* a, const uint16_t* b, uint8_t* carry){
     *carry = c;
 }
 
-void add_len(uint16_t* a, const uint16_t* b, uint8_t* carry, uint8_t len){
+void add_len(uint16_t* a, const uint16_t* b, uint8_t* carry, size_t len){
     uint16_t c = 0; 
     a[0] = a[0] + b[0];
     c = (a[0]>>8) & 0x0001;
     a[0] = a[0] & 0x00ff;
-    for (uint8_t i=1; i < len; ++i){
+    for (size_t i=1; i < len; ++i){
         a[i] = a[i] + b[i] + c;
         c = (a[i]>>8) & 0x00ff;
         a[i] = a[i] & 0x00ff;
@@ -163,13 +170,13 @@ void add_len(uint16_t* a, const uint16_t* b, uint8_t* carry, uint8_t len){
 
 //c = a*b
 void mult(uint16_t*c, const uint16_t* a, const uint16_t* b){
-    for(uint8_t i = 0; i< WORD_LENGTH*2; ++i){
+    for(size_t i = 0; i< WORD_LENGTH*2; ++i){
         c[i] = 0;
     }
-    for(uint8_t i = 0; i< WORD_LENGTH; ++i){
+    for(size_t i = 0; i< WORD_LENGTH; ++i){
         uint8_t u = 0;
         uint16_t uv = 0;
-        for(uint8_t j = 0; j< WORD_LENGTH; ++j){
+        for(size_t j = 0; j< WORD_LENGTH; ++j){
             uv = c[i+j] + a[i]*b[j] + u;
             c[i+j] = uv & 0xff;
             u = (uv >> 8)&0xff;
@@ -184,7 +191,7 @@ void sub(uint16_t* a, const uint16_t* b, uint8_t* carry){
     a[0] = a[0] - b[0];
     c = (a[0]>>8) & 0x0001;
     a[0] = a[0] & 0x00ff;
-    for (uint8_t i=1; i < WORD_LENGTH; ++i){
+    for (size_t i=1; i < WORD_LENGTH; ++i){
         a[i] = a[i] - b[i] - c;
         c = (a[i]>>8) & 0x0001;
         a[i] = a[i] & 0x00ff;
@@ -192,12 +199,12 @@ void sub(uint16_t* a, const uint16_t* b, uint8_t* carry){
     *carry = c;
 }
 
-void sub_len(uint16_t* a, const uint16_t* b, uint8_t* carry, uint8_t len){
+void sub_len(uint16_t* a, const uint16_t* b, uint8_t* carry, size_t len){
     uint16_t c = 0; 
     a[0] = a[0] - b[0];
     c = (a[0]>>8) & 0x0001;
     a[0] = a[0] & 0x00ff;
-    for (uint8_t i=1; i < len; ++i){
+    for (size_t i=1; i < len; ++i){
         a[i] = a[i] - b[i] - c;
         c = (a[i]>>8) & 0x0001;
         a[i] = a[i] & 0x00ff;
@@ -233,12 +240,12 @@ void mod_sub(uint16_t *a, const uint16_t *b, const uint16_t* p){
 
 void neg(uint16_t *x){
     uint16_t z[WORD_LENGTH] = {0};
-    for(uint8_t i =0; i<WORD_LENGTH; i++){
+    for(size_t i =0; i<WORD_LENGTH; i++){
         z[i] = 0;
     }
     uint8_t carry =0;
     sub(z, x, &carry);
-    for(uint8_t i =0; i<WORD_LENGTH; i++){
+    for(size_t i =0; i<WORD_LENGTH; i++){
         x[i] = z[i];
     }
 }
@@ -297,7 +304,7 @@ void inverse(uint16_t *inv, const uint16_t* x, const uint16_t* y){
         xc[i]=x[i];yc[i]=y[i];
     }
     D{printf("Start compute inverse\n");}
-    for(uint8_t i=0; i<WORD_LENGTH; ++i){
+    for(size_t i=0; i<WORD_LENGTH; ++i){
         g[i]=0;
     }
     g[0]=1;
@@ -313,7 +320,7 @@ void inverse(uint16_t *inv, const uint16_t* x, const uint16_t* y){
     uint16_t c[WORD_LENGTH]= {0}; uint8_t c_neg = 0;
     uint16_t d[WORD_LENGTH]= {0}; uint8_t d_neg = 0;
     uint8_t zero = 0;
-    for(uint8_t i =0; i<WORD_LENGTH; ++i){
+    for(size_t i =0; i<WORD_LENGTH; ++i){
         u[i]=x[i]; v[i]=y[i]; 
     }
     d[0]=1;a[0]=1;
@@ -353,7 +360,7 @@ void inverse(uint16_t *inv, const uint16_t* x, const uint16_t* y){
         D{printf("a: %u\n",a_neg);print_dec(a,WORD_LENGTH);printf("c: %u\n",c_neg);print_dec(c,WORD_LENGTH);}
         D{printf("u: \n");print_dec(u,WORD_LENGTH);printf("v: \n");print_dec(v,WORD_LENGTH);puts("");}
     }
-    for(uint8_t i =0; i< WORD_LENGTH; ++i){
+    for(size_t i =0; i< WORD_LENGTH; ++i){
         inv[i] = d[i];
     }
 
@@ -373,30 +380,30 @@ void inverse(uint16_t *inv, const uint16_t* x, const uint16_t* y){
 **  output: x/y
 **  return: q = quotient, r =reminder
 **/
-void divide(uint16_t* q, uint16_t* r, const uint16_t*  x, const uint16_t*  y, uint8_t n, uint8_t t){
+void divide(uint16_t* q, uint16_t* r, const uint16_t*  x, const uint16_t*  y, size_t n, size_t t){
     uint16_t* xc = malloc(sizeof(uint16_t) * (n+1));
     uint16_t* yc = malloc(sizeof(uint16_t) * (n+1));
     uint16_t qarr[WORD_LENGTH] = {0};
     uint16_t tmp[WORD_LENGTH*2] = {0};
     
-    for(uint8_t i = 0; i<=n; ++i){
+    for(size_t i = 0; i<=n; ++i){
         xc[i] = x[i];
     }
-    for(uint8_t i=0; i<=n; ++i){
+    for(size_t i=0; i<=n; ++i){
         if(i < n-t){
             yc[i] = 0;
         }else{
             yc[i] = y[i-(n-t)];
         }
     }
-    D{printf("xc: ");print_hex(xc, n+1); printf("yc: ");print_hex(yc, n+1); printf("n: %u\n",n);printf("t: %u\n",t);}
+    D{printf("xc: ");print_hex(xc, n+1); printf("yc: ");print_hex(yc, n+1); printf("n: %zu\n",n);printf("t: %zu\n",t);}
     uint8_t carry = 0;
     while(compare_len(xc, yc, n+1)>=0){
         q[n-t] += 1;
         sub_len(xc, yc, &carry, n+1);
     }
     D{printf("after step 2: \n"); printf("xc: ");print_hex(xc, n+1); printf("q: ");print_hex(q, (n-t+1));}
-    for(uint8_t i=n; i>=t+1; --i){
+    for(size_t i=n; i>=t+1; --i){
         if(xc[i] == y[t]){
             q[i-t-1] = 255;
         }else{
@@ -430,10 +437,10 @@ void divide(uint16_t* q, uint16_t* r, const uint16_t*  x, const uint16_t*  y, ui
         }
         qarr[0] = q[i-t-1];
         mult(tmp, y, qarr);
-        for(uint8_t j=0; j<=n; j++){
+        for(size_t j=0; j<=n; j++){
             yc[j] = 0;
         }
-        for(uint8_t j=i-t-1; j<=n; j++){
+        for(size_t j=i-t-1; j<=n; j++){
             if((j-(i-t-1))<WORD_LENGTH*2){
                 yc[j] = tmp[j-(i-t-1)];
             }
@@ -444,10 +451,10 @@ void divide(uint16_t* q, uint16_t* r, const uint16_t*  x, const uint16_t*  y, ui
         sub_len(xc, yc, &carry, n+1);
         D{printf("after step 3.3: \n");printf("xc: ");print_hex(xc, (n+1)); printf("yc: ");print_hex(yc, n+1); printf("q: ");print_hex(q, (n-t+1));}
         if(carry>0){
-            for(uint8_t j=0; j<=n; j++){
+            for(size_t j=0; j<=n; j++){
                 yc[j] = 0;
             }
-            for(uint8_t j=i-t-1; j<=n; j++){
+            for(size_t j=i-t-1; j<=n; j++){
                 if((j-(i-t-1))<=t){
                     yc[j] = y[j-(i-t-1)];
                 }
@@ -460,14 +467,14 @@ void divide(uint16_t* q, uint16_t* r, const uint16_t*  x, const uint16_t*  y, ui
             D{printf("q: ");print_hex(q, (n-t+1));}
         }
     }
-    for(int i=0; i<t+1; ++i){
+    for(size_t i=0; i<t+1; ++i){
         r[i] = xc[i];
     }
     D{printf("r: ");print_hex(r, (t+1));}
     free(xc);free(yc);xc=NULL;yc=NULL;
 }
 
-void reduce(uint16_t* x, uint8_t xlen, const uint16_t* mod){
+void reduce(uint16_t* x, size_t xlen, const uint16_t* mod){
     int n;
     int t;
     for(n=xlen-1; n>=0; n--){
@@ -486,7 +493,7 @@ void reduce(uint16_t* x, uint8_t xlen, const uint16_t* mod){
     uint16_t q[WORD_LENGTH] = {0};
     uint16_t r[WORD_LENGTH] = {0};
     divide(q,r,x,mod,n,t);
-    for(int i =0; i<WORD_LENGTH; i++){
+    for(size_t i =0; i<WORD_LENGTH; i++){
         x[i]=r[i];
     }
 }
@@ -495,7 +502,7 @@ void mod_mult(uint16_t* a, const uint16_t* b, const uint16_t* n){
     uint16_t c[WORD_LENGTH*2] = {0};
     mult(c,a,b);
     reduce(c, WORD_LENGTH * 2, n);
-    for(int i=0; i<WORD_LENGTH; i++){
+    for(size_t i=0; i<WORD_LENGTH; i++){
         a[i]=c[i];
     }
 }
@@ -621,7 +628,8 @@ void mont_mult(uint16_t* x, uint16_t* y,uint16_t* m,uint16_t m_pi, size_t n){
 }
 
 
-void mont_exp(uint8_t* x,const uint8_t* e,const uint8_t* p,size_t rlen){
+void mont_exp(uint16_t* x,const uint16_t* e,const uint16_t* p,size_t klen, size_t rlen){
+    D{printf("msg:\n"); print_hex(x, WORD_LENGTH); printf("d:\n"); print_hex(e, WORD_LENGTH); printf("n:\n"); print_hex(p, WORD_LENGTH);}
     uint16_t x_mont[WORD_LENGTH] = {0};
     uint16_t* r = malloc(sizeof(uint16_t) * (rlen+1)); r[rlen]=1;
     uint16_t a[WORD_LENGTH] = {0};
@@ -645,8 +653,8 @@ void mont_exp(uint8_t* x,const uint8_t* e,const uint8_t* p,size_t rlen){
     reduce(r16, rlen+1, p16);
     mod_mult(x_mont, r16, p16);
     copy(a, r16);
-    int start_ind = 255;
-    for(start_ind=255; start_ind>=0 ;start_ind--){
+    int start_ind = klen;
+    for(start_ind=klen; start_ind>=0 ;start_ind--){
         uint8_t bit = (e[start_ind/8] >> (start_ind%8)) & 1U;
         if(bit){
             break;
@@ -654,10 +662,11 @@ void mont_exp(uint8_t* x,const uint8_t* e,const uint8_t* p,size_t rlen){
     }
     for(int i=start_ind;i>=0;i--){
         uint8_t bit = (e[i/8] >> (i%8)) & 1U;
+        //printf("i=%d, bit=%u\n",i,bit);
         copy(a_copy, a);
-            ARITH_DEBUG =true;
+            //ARITH_DEBUG =true;
         mont_mult(a,a_copy,p16,m_pi,WORD_LENGTH);
-            ARITH_DEBUG =false;
+            //ARITH_DEBUG =false;
         if(bit == 1){
             mont_mult(a,x_mont,p16,m_pi,WORD_LENGTH);
         }

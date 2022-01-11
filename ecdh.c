@@ -1,3 +1,4 @@
+#define WORD_LENGTH 32
 #include "ecdh.h"
 #include "ecurve.h"
 #include "arithmetic.h"
