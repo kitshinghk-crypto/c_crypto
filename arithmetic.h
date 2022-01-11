@@ -34,6 +34,6 @@ extern void print_dec(const uint16_t *, size_t);
 extern int is_zero(const uint16_t *);
 extern int is_one(const uint16_t *);
 extern int is_equal(const uint16_t *,const uint16_t *);
-extern void mont_mult(uint16_t* x, uint16_t* y,uint16_t* m,uint16_t m_pi, size_t n);
+extern void mont_mult(uint16_t* x, const uint16_t* y, const uint16_t* m,uint16_t m_pi, size_t n);
 extern void mont_exp(uint16_t* x,const uint16_t* e,const uint16_t* p,size_t klen,size_t rlen);
 #endif

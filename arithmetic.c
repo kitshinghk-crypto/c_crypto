@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 #define D if(ARITH_DEBUG)
+//#define USE_SQUSRE_AND_MULTIPLY
+#define USE_MONTGOMERY
 
 bool ARITH_DEBUG = false;
 
@@ -574,7 +576,7 @@ void inv_p(uint16_t* inv, const uint16_t* a, const uint16_t* p){
     
 }
 
-void mont_mult(uint16_t* x, uint16_t* y,uint16_t* m,uint16_t m_pi, size_t n){
+void mont_mult(uint16_t* x, const uint16_t* y, const uint16_t* m, uint16_t m_pi, size_t n){
     D{printf("x:"); print_hex(x,WORD_LENGTH); printf("y:"); print_hex(y,WORD_LENGTH); printf("m:"); print_hex(m,WORD_LENGTH);printf("m_pi:%02x\n",m_pi);}
     uint16_t* a = malloc(sizeof(uint16_t)*(n+1));
     for(size_t i=0; i<n+1; i++){
@@ -627,15 +629,20 @@ void mont_mult(uint16_t* x, uint16_t* y,uint16_t* m,uint16_t m_pi, size_t n){
     }
 }
 
+void swap_num(uint16_t* x,uint16_t* y, uint8_t b){
+    uint8_t mask = ~(b-1);
+    uint8_t t = 0;
+    for(int i=0;i<WORD_LENGTH;i++){
+        t = mask & (x[i] ^ y[i]);
+        x[i] ^= t;
+        y[i] ^= t;
+    }
+}
+
 
 void mont_exp(uint16_t* x,const uint16_t* e,const uint16_t* p,size_t klen, size_t rlen){
     D{printf("msg:\n"); print_hex(x, WORD_LENGTH); printf("d:\n"); print_hex(e, WORD_LENGTH); printf("n:\n"); print_hex(p, WORD_LENGTH);}
-    uint16_t x_mont[WORD_LENGTH] = {0};
-    uint16_t* r = malloc(sizeof(uint16_t) * (rlen+1)); r[rlen]=1;
-    uint16_t a[WORD_LENGTH] = {0};
-    uint16_t a_copy[WORD_LENGTH] = {0};
     uint16_t one[WORD_LENGTH] = {0}; one[0]=1;
-    uint16_t p16[WORD_LENGTH] = {0};
     uint16_t * r16 = malloc(sizeof(uint16_t)*(rlen+1));
     uint16_t m_pi =0;
     for(m_pi=0; m_pi<256; m_pi++){
@@ -644,15 +651,10 @@ void mont_exp(uint16_t* x,const uint16_t* e,const uint16_t* p,size_t klen, size_
         }
     }
     m_pi = 256 - m_pi;
-    for(size_t i=0;i<WORD_LENGTH;i++){
-        x_mont[i] = x[i]; p16[i] = p[i];
-    }
     for(size_t i=0; i<rlen+1; i++){
-        r16[i] = r[i];
+        r16[i] = 0;
     }
-    reduce(r16, rlen+1, p16);
-    mod_mult(x_mont, r16, p16);
-    copy(a, r16);
+    r16[rlen] =1;
     int start_ind = klen;
     for(start_ind=klen; start_ind>=0 ;start_ind--){
         uint8_t bit = (e[start_ind/8] >> (start_ind%8)) & 1U;
@@ -660,19 +662,49 @@ void mont_exp(uint16_t* x,const uint16_t* e,const uint16_t* p,size_t klen, size_
             break;
         }
     }
-    for(int i=start_ind;i>=0;i--){
-        uint8_t bit = (e[i/8] >> (i%8)) & 1U;
-        //printf("i=%d, bit=%u\n",i,bit);
-        copy(a_copy, a);
-            //ARITH_DEBUG =true;
-        mont_mult(a,a_copy,p16,m_pi,WORD_LENGTH);
-            //ARITH_DEBUG =false;
-        if(bit == 1){
-            mont_mult(a,x_mont,p16,m_pi,WORD_LENGTH);
+
+    #ifdef USE_SQUSRE_AND_MULTIPLY
+        uint16_t x_mont[WORD_LENGTH] = {0};
+        uint16_t a[WORD_LENGTH] = {0};
+        for(size_t i=0;i<WORD_LENGTH;i++){
+            x_mont[i] = x[i];
         }
-    }
-    mont_mult(a,one,p16,m_pi,WORD_LENGTH);
-    for(int i=0; i<WORD_LENGTH; i++){
-        x[i] = a[i] & 0xff;
-    }
+        reduce(r16, rlen+1, p);
+        mod_mult(x_mont, r16, p);
+        copy(a, r16);
+        for(int i=start_ind;i>=0;i--){
+            uint8_t bit = (e[i/8] >> (i%8)) & 1U;
+            mont_mult(a,a,p,m_pi,WORD_LENGTH);
+            if(bit == 1){
+                mont_mult(a,x_mont,p,m_pi,WORD_LENGTH);
+            }
+        }
+        mont_mult(a,one,p,m_pi,WORD_LENGTH);
+        for(int i=0; i<WORD_LENGTH; i++){
+            x[i] = a[i] & 0xff;
+        }
+    #endif
+
+    #ifdef USE_MONTGOMERY
+        uint16_t x1[WORD_LENGTH] = {0};
+        uint16_t x2[WORD_LENGTH] = {0};
+        for(size_t i=0;i<WORD_LENGTH;i++){
+            x1[i] = x[i];
+        }
+        reduce(r16, rlen+1, p);
+        mod_mult(x1, r16, p);
+        copy(x2,x1);
+        mont_mult(x2, x1, p, m_pi, WORD_LENGTH);
+        for(int i=start_ind-1;i>=0;i--){
+            uint8_t bit = (e[i/8] >> (i%8)) & 1U;
+            swap_num(x1,x2,bit);
+            mont_mult(x2, x1, p, m_pi, WORD_LENGTH);
+            mont_mult(x1, x1, p, m_pi, WORD_LENGTH);
+            swap_num(x1,x2,bit);
+        }
+        mont_mult(x1,one,p,m_pi,WORD_LENGTH);
+        for(int i=0; i<WORD_LENGTH; i++){
+            x[i] = x1[i] & 0xff;
+        }
+    #endif
 } 

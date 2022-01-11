@@ -7,5 +7,5 @@ typedef int bool;
 #define false 0
 extern bool RSA_DEBUG;
 
-extern void pkcs1_15_sig(uint8_t* s, const uint8_t* m, const uint8_t* n, const uint8_t* d, size_t mlen);
+extern void pkcs1_15_sha256_sig(uint8_t* s, const uint8_t* m, const uint8_t* n, const uint8_t* d, size_t mlen);
 #endif
