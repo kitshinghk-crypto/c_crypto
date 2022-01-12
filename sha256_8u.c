@@ -187,7 +187,7 @@ void static init_h(uint8_t* h){
     }
 }
 
-void sha256_8u_hash(uint8_t* out, const uint8_t* m, size_t len ){
+void sha256_8u_hash(uint8_t* out, const uint8_t* m, size_t len){
     //uint32_t a=ih[0], b=ih[1], c=ih[2], d=ih[3], e=ih[4], f=ih[5], g=ih[6], h=ih[7];
     uint8_t a[4]={0}; uint8_t b[4]={0}; uint8_t c[4]={0}; uint8_t d[4]={0}; 
     uint8_t e[4]={0}; uint8_t f[4]={0}; uint8_t g[4]={0}; uint8_t h[4]={0};
@@ -205,8 +205,11 @@ void sha256_8u_hash(uint8_t* out, const uint8_t* m, size_t len ){
     size_t padded_m_len = (len+byte_pad_len+1)/8+8;
     D{printf(" Padded message len: %zu\n", padded_m_len);}
     uint8_t * padded_m = malloc(sizeof(uint8_t)* padded_m_len);
-    for(size_t i =0; i< len; ++i){
-        *(padded_m+i) = m[i];
+    for(size_t i =0; i< padded_m_len; ++i){
+        padded_m[i] =0;
+    }
+    for(size_t i =0; i< (len/8) + (len%8>0); ++i){
+        padded_m[i] = m[i];
     }
     pad(padded_m, padded_m_len, len);
     D{printf(" Padded message: \n");}
