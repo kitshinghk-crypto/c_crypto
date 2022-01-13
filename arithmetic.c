@@ -635,6 +635,7 @@ void mont_mult(uint16_t* x, const uint16_t* y, const uint16_t* m, uint16_t m_pi,
     }else{
         copy_len(x,a,WORD_LENGTH);
     }
+    free(a); a=0;
 }
 
 void swap_num(uint16_t* x,uint16_t* y, uint8_t b){
@@ -722,4 +723,5 @@ void mont_exp(uint16_t* x,const uint16_t* e,const uint16_t* p,size_t klen, size_
             x[i] = x1[i] & 0xff;
         }
     #endif
+    free(r16); r16=0;
 } 
