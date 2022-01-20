@@ -116,16 +116,7 @@ void hashdrbg_reseed(struct hashdrbg* h, const uint8_t* entropy_input, size_t el
     h->reseed_counter = 1;
     print_state(h);
 }
-/*
-def hashDrbgGenNext(v, c, reseedCounter, requestedNoOfBits, additionalInput):
-    if additionalInput != "":
-        w = sha256(bytearray.fromhex("02"+v+additionalInput)).digest().hex()
-        v = hex((int(v,16) + int(w,16)) & int("f"*110 ,16))[2:]
-    returnBits = hashGen(v, requestedNoOfBits)
-    h = sha256(bytearray.fromhex("03"+v)).digest().hex()
-    v = hex((int(v,16)+int(h,16)+int(c,16)+reseedCounter)&(int("f"*110 ,16)))[2:]
-    reseedCounter = reseedCounter +1
-    return (returnBits, v, c, reseedCounter)*/
+
 uint8_t* hashdrbg_next(struct hashdrbg* h, size_t requested_no_of_bit, const uint8_t* additional_input, size_t alen){
     int i =0; int j=0; uint8_t t =0; uint8_t carry =0; 
     if(additional_input){
