@@ -116,8 +116,10 @@ void ccm_aes_encrypt(uint8_t* cipher, const uint8_t* plaintext, const uint8_t* k
     // Compute CTR
     size_t m = ((plen/16) + (plen%16>0));
     uint8_t** ctr = malloc((m+1) * sizeof(uint8_t*));
+    if(ctr == 0) return;
     for (size_t i = 0; i < m+1; i++) {
         ctr[i] = malloc(16 * sizeof(uint8_t));
+        if (ctr[i]==0) return;
         for(size_t j=0; j<16; j++){
             ctr[i][j] = 0;
         }
@@ -140,8 +142,10 @@ void ccm_aes_encrypt(uint8_t* cipher, const uint8_t* plaintext, const uint8_t* k
     }
     // Compute S
     uint8_t** s = malloc((m+1) * sizeof(uint8_t*));
+    if (s == 0) return;
     for (size_t i = 0; i < m+1; i++) {
         s[i] = malloc(16 * sizeof(uint8_t));
+        if (s[i]==0) return;
         for(size_t j=0; j<16; j++){
             s[i][j] = 0;
         }
@@ -168,8 +172,10 @@ int ccm_aes_decrypt(uint8_t* plaintext, const uint8_t* cipher, const uint8_t* ke
     //Compute CTR
     size_t m = (((clen-tlen)/16) + ((clen-tlen)%16>0));
     uint8_t** ctr = malloc((m+1) * sizeof(uint8_t*));
+    if (ctr==0) return 0;
     for (size_t i = 0; i < m+1; i++) {
         ctr[i] = malloc(16 * sizeof(uint8_t));
+        if (ctr[i]==0) return 0;
         for(size_t j=0; j<16; j++){
             ctr[i][j] = 0;
         }
@@ -192,8 +198,10 @@ int ccm_aes_decrypt(uint8_t* plaintext, const uint8_t* cipher, const uint8_t* ke
     }
     // Compute S
     uint8_t** s = malloc((m+1) * sizeof(uint8_t*));
+    if(s==0) return 0;
     for (size_t i = 0; i < m+1; i++) {
         s[i] = malloc(16 * sizeof(uint8_t));
+        if(s[i]==0) return 0;
         for(size_t j=0; j<16; j++){
             s[i][j] = 0;
         }
@@ -210,6 +218,7 @@ int ccm_aes_decrypt(uint8_t* plaintext, const uint8_t* cipher, const uint8_t* ke
     D{printf("P:\n");}
     D{print_arr(plaintext,(clen-tlen));}
     uint8_t* t = malloc(tlen * sizeof(uint8_t));
+    if(t==0) return 0;
     for(size_t i=clen-tlen; i<clen; i++){
         *(t+(i-(clen-tlen))) = cipher[i] ^ s[0][(i-(clen-tlen))];
     }

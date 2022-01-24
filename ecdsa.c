@@ -49,6 +49,7 @@ void static reverse_msg(uint8_t * r_msg, const uint8_t* msg, size_t msg_byte_len
 void ecdsa_p256_sha256_sign(uint8_t* r, uint8_t* s, const uint8_t* d, const uint8_t* k, const uint8_t* msg, size_t mlen){
     size_t byte_len = mlen/8 + (mlen%8 > 0);
     uint8_t * r_msg = malloc(sizeof(uint8_t)*byte_len);
+    if (r_msg==0) return;
     uint8_t hash[32]={0};
     uint16_t k_inv[32] = {0};
     uint16_t k_16[32] = {0};
@@ -90,6 +91,7 @@ int ecdsa_p256_sha256_verify(const uint8_t* r, const uint8_t* s, const uint8_t* 
                                 const uint8_t* msg, size_t mlen){
     size_t byte_len = mlen/8 + (mlen%8 > 0);
     uint8_t * r_msg = malloc(sizeof(uint8_t)*byte_len);
+    if (r_msg==0) return 0;
     uint8_t hash[32]={0};
     uint16_t h_16[32] = {0};
     uint16_t s_inv[32] = {0};

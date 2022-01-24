@@ -42,11 +42,13 @@ void plus_one(uint8_t* a, size_t len){
 void static hash_gen(uint8_t* hash, uint8_t* v, size_t requested_no_of_bits){
     size_t m = (requested_no_of_bits/OUTLEN) + ((requested_no_of_bits % OUTLEN) >0);
     uint8_t * out_w = malloc(sizeof(uint8_t) * m * (OUTLEN/8));
+    if (out_w == 0) return;
     int i =0;
     for(i=0;i<m * (OUTLEN/8);i++){
         out_w[i] = 0;
     }
     uint8_t *data = malloc(sizeof(uint8_t) * SEEDLEN/8);
+    if (data ==0) return;
     for(i=0; i< SEEDLEN/8; i++){
         data[i] = v[i];
     }
@@ -67,7 +69,9 @@ void static hash_df(uint8_t* hash, size_t no_of_bits_to_return, const uint8_t* i
     uint8_t counter = 1;
     int i =0; int j =0;
     uint8_t* h = malloc(sizeof(uint8_t)*(hlen));
+    if (h==0) return;
     uint8_t* tmp = malloc(sizeof(uint8_t)* tmplen);
+    if (tmp==0) return;
     for(i=0;i<hlen;i++){
         h[i] = 0;
     }
@@ -95,6 +99,7 @@ void static hash_df(uint8_t* hash, size_t no_of_bits_to_return, const uint8_t* i
 
 void hashdrbg_reseed(struct hashdrbg* h, const uint8_t* entropy_input, size_t elen, const uint8_t* additional_input, size_t alen){
     uint8_t* seed_material = malloc(sizeof(uint8_t)*((SEEDLEN/8)+elen + alen + 1));
+    if (seed_material==0) return;
     seed_material[0] = 1;
     int i;
     for(i =0; i<SEEDLEN/8; i++){
@@ -108,6 +113,7 @@ void hashdrbg_reseed(struct hashdrbg* h, const uint8_t* entropy_input, size_t el
     }
     hash_df(h->v, SEEDLEN, seed_material, (SEEDLEN/8)+elen+alen+1);
     uint8_t *tmp = malloc(sizeof(uint8_t) * ((SEEDLEN/8)+1));
+    if (tmp==0) return;
     tmp[0] = 0;
     for(i=0; i < (SEEDLEN/8);i++){
         tmp[i+1] = h->v[i];
@@ -121,7 +127,9 @@ uint8_t* hashdrbg_next(struct hashdrbg* h, size_t requested_no_of_bit, const uin
     int i =0; int j=0; uint8_t t =0; uint8_t carry =0; 
     if(additional_input){
         uint8_t* tmp2 = malloc(sizeof(uint8_t) * (SEEDLEN/8 + alen +1));
+        if (tmp2==0) return 0;
         uint8_t* w = malloc(sizeof(uint8_t) * OUTLEN/8);
+        if (w==0) return 0;
         tmp2[0]=2;
         for(i=0;i<SEEDLEN/8;i++){
             tmp2[1+i]=h->v[i];
@@ -143,9 +151,12 @@ uint8_t* hashdrbg_next(struct hashdrbg* h, size_t requested_no_of_bit, const uin
         }
     }
     uint8_t* return_bits = malloc(sizeof(uint8_t) * (requested_no_of_bit/8));
+    if (return_bits ==0) return 0;
     hash_gen(return_bits, h->v, requested_no_of_bit);
     uint8_t* tmp = malloc(sizeof(uint8_t) * ((SEEDLEN/8)+1));
+    if (tmp ==0) return 0;
     uint8_t* hash   = malloc(sizeof(uint8_t) * OUTLEN/8);
+    if (hash==0) return 0;
     tmp[0] = 3;
     for(i=0;i<SEEDLEN/8;i++){
         tmp[1+i] = h->v[i];
@@ -185,9 +196,13 @@ uint8_t* hashdrbg_next(struct hashdrbg* h, size_t requested_no_of_bit, const uin
 
 struct hashdrbg* hashdrbg_init(const uint8_t* entropy_input, size_t elen, const uint8_t* nonce, size_t nlen){
     struct hashdrbg* h = malloc(sizeof(struct hashdrbg));
+    if (h==0) return 0;
     h->v = malloc(sizeof(uint8_t) * SEEDLEN/8);
+    if (h->v == 0) return 0;
     h->c = malloc(sizeof(uint8_t) * SEEDLEN/8);
+    if (h->c == 0) return 0;
     uint8_t* seed_material = malloc(sizeof(uint8_t)*(elen + nlen));
+    if (seed_material == 0) return 0;
     int i;
     for(i=0; i< SEEDLEN/8; i++){
         h->v[i] = 0;
@@ -202,6 +217,7 @@ struct hashdrbg* hashdrbg_init(const uint8_t* entropy_input, size_t elen, const 
     }
     hash_df(h->v, SEEDLEN, seed_material, elen+nlen);
     uint8_t *tmp = malloc(sizeof(uint8_t) * (SEEDLEN/8 + 1));
+    if (tmp == 0) return 0;
     tmp[0] = 0;
     for(i=0; i<SEEDLEN/8; i++){
         tmp[i+1] = h->v[i];

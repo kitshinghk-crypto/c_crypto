@@ -384,7 +384,9 @@ void inverse(uint16_t *inv, const uint16_t* x, const uint16_t* y){
 **/
 void divide(uint16_t* q, uint16_t* r, const uint16_t*  x, const uint16_t*  y, size_t n, size_t t){
     uint16_t* xc = malloc(sizeof(uint16_t) * (n+1));
+    if (xc==0) return;
     uint16_t* yc = malloc(sizeof(uint16_t) * (n+1));
+    if (yc==0) return;
     uint16_t qarr[WORD_LENGTH] = {0};
     uint16_t tmp[WORD_LENGTH*2] = {0};
     
@@ -587,6 +589,7 @@ void inv_p(uint16_t* inv, const uint16_t* a, const uint16_t* p){
 void mont_mult(uint16_t* x, const uint16_t* y, const uint16_t* m, uint16_t m_pi, size_t n){
     D{printf("x:"); print_hex(x,WORD_LENGTH); printf("y:"); print_hex(y,WORD_LENGTH); printf("m:"); print_hex(m,WORD_LENGTH);printf("m_pi:%02x\n",m_pi);}
     uint16_t* a = malloc(sizeof(uint16_t)*(n+1));
+    if (a==0) return;
     for(size_t i=0; i<n+1; i++){
         a[i] = 0;
     }
@@ -660,6 +663,7 @@ void mont_exp(uint16_t* x,const uint16_t* e,const uint16_t* p,size_t klen, size_
     D{printf("msg:\n"); print_hex(x, WORD_LENGTH); printf("d:\n"); print_hex(e, WORD_LENGTH); printf("n:\n"); print_hex(p, WORD_LENGTH);}
     uint16_t one[WORD_LENGTH] = {0}; one[0]=1;
     uint16_t * r16 = malloc(sizeof(uint16_t)*(rlen+1));
+    if (r16==0) return;
     uint16_t m_pi =0;
     for(m_pi=0; m_pi<256; m_pi++){
         if((m_pi*(p[0]&0xff))%256 == 1){

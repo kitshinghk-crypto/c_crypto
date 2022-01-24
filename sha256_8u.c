@@ -205,6 +205,9 @@ void sha256_8u_hash(uint8_t* out, const uint8_t* m, size_t len){
     size_t padded_m_len = (len+byte_pad_len+1)/8+8;
     D{printf(" Padded message len: %zu\n", padded_m_len);}
     uint8_t * padded_m = malloc(sizeof(uint8_t)* padded_m_len);
+    if(padded_m == 0){
+        return;
+    }
     for(size_t i =0; i< padded_m_len; ++i){
         padded_m[i] =0;
     }
