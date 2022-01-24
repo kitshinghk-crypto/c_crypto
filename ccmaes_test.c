@@ -23,7 +23,7 @@ int is_equal(uint8_t* expected, uint8_t* actual, size_t len){
 
 
 int main(void){
-    CCMAES_DEBUG = false;
+    CCMAES_DEBUG = true;
     //40414243 44454647 48494a4b 4c4d4e4f
     uint8_t key1[16] = {0x40, 0x41, 0x42, 0x43, 
                         0x44, 0x45, 0x46, 0x47, 
@@ -40,16 +40,16 @@ int main(void){
     //71 62 1 5b 4d ac 25 5d
     uint8_t cipher1[8] = {0x71, 0x62, 0x01, 0x5b, 0x4d, 0xac, 0x25, 0x5d};
     
-    uint8_t* actual_cipher1 = malloc(8 * sizeof(uint8_t*));
+    uint8_t actual_cipher1[8] = {0};
     printf("CCM AES encrypt:\n");
-    ccm_aes_encrypt(actual_cipher1, p1, key1, n1, a1, 7, 8, 4*sizeof(uint8_t), 4);
+    ccm_aes_encrypt(actual_cipher1, p1, key1, n1, a1, 7, 8, 4, 4);
     printf("cipher:\n");
     print_arr(actual_cipher1, 8);
     assert(is_equal(cipher1, actual_cipher1, 8));
     printf("PASS CCM AES encrypt test 1\n");
 
     puts("");
-    uint8_t* actual_pt1 = malloc(4 * sizeof(uint8_t*));
+    uint8_t actual_pt1[4] = {0};
     ccm_aes_decrypt(actual_pt1, cipher1, key1, n1, a1, 7, 8, 8, 4);
     printf("plaintext:\n");
     print_arr(actual_pt1, 4);
@@ -84,7 +84,7 @@ int main(void){
     printf("PASS CCM AES encrypt test 2\n");
 
     puts("");
-    uint8_t* actual_pt2 = malloc(16 * sizeof(uint8_t*));
+    uint8_t* actual_pt2 = malloc(16 * sizeof(uint8_t));
     ccm_aes_decrypt(actual_pt2, cipher2, key1, n2, a2, 8, 16, 22, 6);
     printf("plaintext:\n");
     print_arr(actual_pt2, 16);
@@ -114,9 +114,9 @@ int main(void){
                             0x9b, 0x1c, 0xea, 0xec, 0xcd, 0x97, 0xe7, 0x0b,
                             0x61, 0x76, 0xaa, 0xd9, 0xa4, 0x42, 0x8a, 0xa5,
                             0x48, 0x43, 0x92, 0xfb, 0xc1, 0xb0, 0x99, 0x51};
-    uint8_t* actual_cipher3 = malloc(32 * sizeof(uint8_t*));
+    uint8_t actual_cipher3[32] = {0};
     printf("CCM AES encrypt:\n");
-    ccm_aes_encrypt(actual_cipher3, p3, key1, n3, a3, 12, 20, 24*sizeof(uint8_t), 8);
+    ccm_aes_encrypt(actual_cipher3, p3, key1, n3, a3, 12, 20, 24, 8);
     printf("cipher:\n");
     print_arr(actual_cipher3, 32);
     assert(is_equal(cipher3, actual_cipher3, 32));
@@ -124,7 +124,7 @@ int main(void){
 
 
     puts("");
-    uint8_t* actual_pt3 = malloc(24 * sizeof(uint8_t*));
+    uint8_t actual_pt3[24] = {0};
     ccm_aes_decrypt(actual_pt3, cipher3, key1, n3, a3, 12, 20, 32, 8);
     printf("plaintext:\n");
     print_arr(actual_pt3, 24);

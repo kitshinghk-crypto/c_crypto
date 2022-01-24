@@ -18,6 +18,7 @@ void static reverse_msg(uint8_t * r_msg, const uint8_t* msg, size_t msg_byte_len
 void pkcs1_15_sha256_sig_gen(uint8_t* s, const uint8_t* m, const uint8_t* n, const uint8_t* d, size_t mlen){
     size_t byte_len = mlen/8 + (mlen%8 > 0);
     uint8_t * r_msg = malloc(sizeof(uint8_t)*byte_len);
+    if (r_msg ==0) return;
     uint8_t hash[32]={0};
     uint16_t h_16[32] = {0};
     uint16_t em[WORD_LENGTH] = {0};
@@ -54,6 +55,7 @@ void pkcs1_15_sha256_sig_gen(uint8_t* s, const uint8_t* m, const uint8_t* n, con
 int pkcs1_15_sha256_sig_ver(const uint8_t* s, const uint8_t* m, const uint8_t* n, const uint8_t* e, size_t mlen){
     size_t byte_len = mlen/8 + (mlen%8 > 0);
     uint8_t * r_msg = malloc(sizeof(uint8_t)*byte_len);
+    if (r_msg == 0) return 0;
     uint16_t n16[WORD_LENGTH] = {0};
     uint16_t e16[WORD_LENGTH] = {0};
     uint16_t s16[WORD_LENGTH] = {0};

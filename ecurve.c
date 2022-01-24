@@ -63,8 +63,10 @@ struct epoint* p256_g(){
 
 struct epoint* epoint_init(){
     struct epoint* p = malloc(sizeof(struct epoint));
+    if(p==0) return 0;
     p->x = malloc(sizeof(uint16_t)*WORD_LENGTH);
     p->y = malloc(sizeof(uint16_t)*WORD_LENGTH);
+    if (p->x == 0||p->y == 0) return 0;
     for(uint8_t i =0; i< WORD_LENGTH; i++){
         p->x[i] = 0;
         p->y[i] = 0;
@@ -74,9 +76,11 @@ struct epoint* epoint_init(){
 
 struct epoint_proj* epoint_proj_init(){
     struct epoint_proj* pj = malloc(sizeof(struct epoint_proj));
+    if(pj == 0) return 0;
     pj->x = malloc(sizeof(uint16_t)*WORD_LENGTH);
     pj->y = malloc(sizeof(uint16_t)*WORD_LENGTH);
     pj->z = malloc(sizeof(uint16_t)*WORD_LENGTH);
+    if (pj->x ==0 || pj->y ==0 || pj->z ==0) return 0;
     for(uint8_t i =0; i< WORD_LENGTH; i++){
         pj->x[i] = 0;
         pj->y[i] = 0;
@@ -87,6 +91,7 @@ struct epoint_proj* epoint_proj_init(){
 
 struct epoint_proj* epoint_convert_proj(const struct epoint* p){
     struct epoint_proj* pj = epoint_proj_init();
+    if (pj==0) return 0;
     copy(pj->x, p->x);
     copy(pj->y, p->y);
     for(uint8_t i =0; i< WORD_LENGTH; i++){
@@ -410,6 +415,7 @@ void p256_proj_to_affine_p(struct epoint* ap, struct epoint_proj* p){
 
 struct epoint* p256_proj_to_affine(struct epoint_proj* p){
     struct epoint* ap = epoint_init();
+    if(ap == 0) return 0;
     p256_proj_to_affine_p(ap,p);
     return ap;
 }
@@ -471,6 +477,7 @@ int p256_scalar_mult(struct epoint* kp, const uint8_t* k, const struct epoint* p
         struct epoint_proj* r1= epoint_convert_proj(p);
         randomize_proj(r1, rand_byte_func);
         struct epoint* tmp = epoint_init();
+        if(tmp == 0) return 0;
         int start_ind = 255;
         for(start_ind = 255; start_ind >=0; start_ind--){
             uint8_t bit = (k[start_ind/8] >> (start_ind%8)) & 1U;
@@ -486,6 +493,7 @@ int p256_scalar_mult(struct epoint* kp, const uint8_t* k, const struct epoint* p
             swap_epoint_proj(r0,r1,bit);
         }
         struct epoint* ap  = p256_proj_to_affine(r0);
+        if (ap ==0) return 0;
         copy(kp->x, ap->x);
         copy(kp->y, ap->y);
         free(r0); free(r1); free(ap); free(tmp); r0=0; r1=0; ap=0; tmp=0;
